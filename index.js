@@ -6,34 +6,9 @@ const port = 3000;
 
 const app = express();
 
-players = {};
-
 app.use(bodyParser.json());
 
 app.get("/", (_, res) => res.sendFile(path.join(__dirname + "/index.html")));
-
-app.post("/register", (req, res) => {
-  const username = req.body.username;
-  players[username] = {
-    x: 0,
-    y: 0,
-  };
-  console.log(`Registered ${username}`);
-  res.send(`Registered ${username}`);
-});
-
-app.get("/update/:username", (_, res) => {
-  res.setHeader("Content-Type", "application/json");
-  res.end(JSON.stringify(players));
-});
-
-app.post("/move", (req, res) => {
-  const delta = req.body.delta;
-  const username = req.body.username;
-  players[username].x += delta.x;
-  players[username].y += delta.y;
-  console.log(`Moving ${username}`, delta);
-});
 
 const wsServer = new WebSocket.Server({
   server: app.listen(port, () =>
@@ -41,10 +16,57 @@ const wsServer = new WebSocket.Server({
   ),
 });
 
+let clients = {};
+let players = {};
+let id = 0;
 wsServer.on("connection", (socket) => {
-  socket.on("message", (message) => {
-    wsServer.clients.forEach((client) => {
-      client.send(message);
-    });
-  });
+  const thisId = id;
+  clients[thisId] = socket;
+  console.log(`clients[${thisId}]`);
+  socket.on("message", (msgJson) => onMessage(msgJson, thisId));
+  id++;
+  //   const res = {
+  //     type: "id",
+  //     id: thisId,
+  //   };
+  //   socket.send(JSON.stringify(res));
 });
+
+function onMessage(msgJson, id) {
+  const client = clients[id];
+  const msg = JSON.parse(msgJson);
+  switch (msg.cmd) {
+    case "register":
+      console.log("register", msg.username);
+      players[msg.username] = {
+        x: 0,
+        y: 0,
+      };
+      client.send(
+        JSON.stringify({
+          type: "initialize",
+          players,
+        })
+      );
+      break;
+    case "move":
+      const username = msg.username;
+      const delta = msg.delta;
+      console.log("moving", username, delta);
+
+      players[username].x += delta.x;
+      players[username].y += delta.y;
+      wsServer.clients.forEach((client) => {
+        client.send(
+          JSON.stringify({
+            type: "update",
+            username,
+            pos: players[username],
+          })
+        );
+      });
+      break;
+    default:
+      console.log("unhandled cmd", cmd, msg);
+  }
+}

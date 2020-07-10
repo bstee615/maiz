@@ -9,6 +9,8 @@
     <canvas id="maze" style="border: 1px solid black;"></canvas>
   </body>
   <script>
+    var socket;
+
     function sendMove(x, y) {
       const username = document.getElementById("username").value;
       const delta = {
@@ -16,36 +18,50 @@
         y,
       };
 
-      fetch(`/move`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, delta }),
-      });
+      const cmd = {
+        cmd: "move",
+        username,
+        delta,
+      };
+      socket.send(JSON.stringify(cmd));
     }
 
     function sendUsername() {
       const username = document.getElementById("username").value;
-      fetch("/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username }),
+
+      socket = new WebSocket("ws://localhost:3000");
+
+      socket.addEventListener("open", () => {
+        const cmd = {
+          cmd: "register",
+          username,
+        };
+
+        socket.send(JSON.stringify(cmd));
       });
 
-      setInterval(getUpdatedPositions, 1000);
+      socket.addEventListener("message", onMessage);
     }
 
-    function getUpdatedPositions() {
-      const username = document.getElementById("username").value;
-      fetch(`/update/${username}`)
-        .then((res) => res.json())
-        .then(updateCanvas);
+    let players;
+    function onMessage(msg) {
+      console.log("message", msg);
+      const data = JSON.parse(msg.data);
+      console.log("data", data);
+      switch (data.type) {
+        case "initialize":
+          players = data.players;
+          drawCanvas(players);
+          break;
+        case "update":
+          console.log("update", data.username, data.pos);
+          players[data.username] = data.pos;
+          drawCanvas(players);
+          break;
+      }
     }
 
-    function updateCanvas(posByUsername) {
+    function drawCanvas(posByUsername) {
       const canvas = document.getElementById("maze");
       const context = canvas.getContext("2d");
       console.log(`Update positions`, posByUsername);
@@ -58,15 +74,5 @@
         context.stroke();
       }
     }
-
-    const socket = new WebSocket("ws://localhost:3000");
-
-    socket.addEventListener("open", () => {
-      socket.send("Hello World!");
-    });
-
-    socket.addEventListener("message", (event) => {
-      console.log(`Message from server: ${event.data}`);
-    });
   </script>
 </html>
