@@ -1,15 +1,21 @@
 const express = require("express");
-const path = require("path");
 const WebSocket = require("ws");
 const uuid = require("uuid");
+const bodyParser = require("body-parser");
 
 const app = express();
 const port = 3000;
 
 app.use(express.static("ui"));
 
+app.use(
+  express.urlencoded({
+    extended: true,
+  })
+);
+
 app.get("/play", (req, res) => {
-  res.cookie("username", req.params.username);
+  res.cookie("username", req.query.username);
   res.redirect("/game.html");
 });
 
@@ -21,7 +27,7 @@ const wsServer = new WebSocket.Server({
 });
 
 let clients = {};
-let players = {};
+let positions = {};
 wsServer.on("connection", (socket) => {
   socket.id = uuid.v4();
   clients[socket.id] = socket;
@@ -47,38 +53,37 @@ function onMessage(msgJson, id) {
   const client = clients[id];
   const msg = JSON.parse(msgJson);
   switch (msg.cmd) {
-    case "register":
-      console.log("register", msg.username);
+    case "initialize":
       client.username = msg.username;
-      players[msg.username] = {
+      console.log("initialize", msg.username);
+
+      positions[msg.username] = {
         x: 0,
         y: 0,
       };
+
       client.send(
         JSON.stringify({
           type: "initialize",
-          players,
+          positions,
         })
       );
       break;
     case "move":
       const username = client.username;
-      const delta = msg.delta;
-      console.log("moving", delta);
 
-      players[username].x += delta.x;
-      players[username].y += delta.y;
-      wsServer.clients.forEach((client) => {
-        client.send(
-          JSON.stringify({
-            type: "update",
-            username,
-            pos: players[username],
-          })
-        );
-      });
+      console.log("moving", msg.delta);
+      positions[username].x += msg.delta.x;
+      positions[username].y += msg.delta.y;
+      client.send(
+        JSON.stringify({
+          type: "update",
+          username,
+          position: positions[username],
+        })
+      );
       break;
     default:
-      console.log("unhandled cmd", cmd, msg);
+      console.log("unhandled cmd", msg.cmd, msg);
   }
 }

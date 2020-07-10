@@ -9,7 +9,7 @@ var socket = new WebSocket("ws://localhost:3000/play");
 
 socket.addEventListener("open", () => {
   const cmd = {
-    cmd: "register",
+    cmd: "initialize",
     username,
   };
 
@@ -21,38 +21,43 @@ const canvas = document.getElementById("maze");
 var context = canvas.getContext("2d");
 let players = {};
 let keys = {
-  ArrowLeft: 0,
-  ArrowRight: 0,
-  ArrowUp: 0,
-  ArrowDown: 0,
+  ArrowLeft: false,
+  ArrowRight: false,
+  ArrowUp: false,
+  ArrowDown: false,
 };
 
-canvas.addEventListener("keydown", function (ev) {
-  if (ev.key in keys) {
-    keys[ev.key] = 1;
+canvas.addEventListener("keydown", (ev) => {
+  if (ev.key in keys && keys[ev.key] === false) {
+    keys[ev.key] = true;
+    switch (ev.key) {
+      case "ArrowLeft":
+        move(-1, 0);
+        break;
+      case "ArrowRight":
+        move(1, 0);
+        break;
+      case "ArrowUp":
+        move(0, -1);
+        break;
+      case "ArrowDown":
+        move(0, 1);
+        break;
+    }
   }
 });
 
-canvas.addEventListener("keyup", function (ev) {
+canvas.addEventListener("keyup", (ev) => {
   if (ev.key in keys) {
-    keys[ev.key] = 0;
+    keys[ev.key] = false;
   }
 });
 
-function sendMove() {
+function move(x, y) {
   let delta = {
-    x: 0,
-    y: 0,
+    x,
+    y,
   };
-
-  delta.x -= keys.ArrowLeft;
-  delta.x += keys.ArrowRight;
-  delta.y -= keys.ArrowUp;
-  delta.y += keys.ArrowDown;
-
-  if (delta.x === 0 && delta.y === 0) {
-    return;
-  }
 
   const cmd = {
     cmd: "move",
@@ -67,26 +72,31 @@ function onMessage(msg) {
   console.log("data", data);
   switch (data.type) {
     case "initialize":
-      players = data.players;
-      setInterval(sendMove, 10);
+      players = data.positions;
+      redrawCanvas(players);
       break;
     case "update":
-      console.log("update", data.username, data.pos);
-      players[data.username] = data.pos;
+      console.log("update", data.username, data.position);
+      players[data.username] = data.position;
+      redrawCanvas(players);
       break;
   }
-
-  redrawCanvas(players);
 }
 
 function redrawCanvas(posByUsername) {
   console.log(`Update positions`, posByUsername);
   context.clearRect(0, 0, canvas.width, canvas.height);
 
-  for (var username in posByUsername) {
+  for (const username in posByUsername) {
     const pos = posByUsername[username];
+    const squareSize = canvas.width / 40;
     context.beginPath();
-    context.rect(pos.x, pos.y, 10, 10);
+    context.rect(
+      pos.x * squareSize,
+      pos.y * squareSize,
+      squareSize,
+      squareSize
+    );
     context.stroke();
   }
 }
