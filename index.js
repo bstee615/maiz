@@ -20,12 +20,17 @@ app.post("/register", (req, res) => {
   res.send(`Registered ${username}`);
 });
 
-app.get("/update/:username", (req, res) => {
-  const username = req.params.username;
-  console.log(`Update ${username}`);
+app.get("/update/:username", (_, res) => {
   res.setHeader("Content-Type", "application/json");
-  res.end(JSON.stringify(players[username]));
-  console.log(`Replying with ${players[username]}`);
+  res.end(JSON.stringify(players));
+});
+
+app.post("/move", (req, res) => {
+  const delta = req.body.delta;
+  const username = req.body.username;
+  players[username].x += delta.x;
+  players[username].y += delta.y;
+  console.log(`Moving ${username}`, delta);
 });
 
 app.listen(port, () =>

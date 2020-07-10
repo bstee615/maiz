@@ -2,9 +2,29 @@
   <head> </head>
   <body>
     <input id="username" type="text" placeholder="username" />
-    <input onclick="sendUsername()" type="button" value="Login" />
+    <button onclick="sendUsername()">Login</button>
+    <button onclick="sendMove(-1, 0)">Left</button>
+    <button onclick="sendMove(1, 0)">Right</button>
+
+    <canvas id="maze" style="border: 1px solid black;"></canvas>
   </body>
   <script>
+    function sendMove(x, y) {
+      const username = document.getElementById("username").value;
+      const delta = {
+        x,
+        y,
+      };
+
+      fetch(`/move`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, delta }),
+      });
+    }
+
     function sendUsername() {
       const username = document.getElementById("username").value;
       fetch("/register", {
@@ -12,18 +32,31 @@
         headers: {
           "Content-Type": "application/json",
         },
-        redirect: "follow",
         body: JSON.stringify({ username }),
       });
 
-      setInterval(update(), 1000);
+      setInterval(getUpdatedPositions, 1);
     }
 
-    function update() {
+    function getUpdatedPositions() {
       const username = document.getElementById("username").value;
       fetch(`/update/${username}`)
         .then((res) => res.json())
-        .then((json) => console.log(`Update`, json));
+        .then(updateCanvas);
+    }
+
+    function updateCanvas(posByUsername) {
+      const canvas = document.getElementById("maze");
+      const context = canvas.getContext("2d");
+      console.log(`Update positions`, posByUsername);
+      context.clearRect(0, 0, canvas.width, canvas.height);
+
+      for (var username in posByUsername) {
+        const pos = posByUsername[username];
+        context.beginPath();
+        context.rect(pos.x, pos.y, 10, 10);
+        context.stroke();
+      }
     }
   </script>
 </html>
