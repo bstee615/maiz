@@ -30,23 +30,9 @@ let clients = {};
 let positions = {};
 wsServer.on("connection", (socket) => {
   socket.id = uuid.v4();
-  clients[socket.id] = socket;
   console.log(`registered client`, socket.id);
+  clients[socket.id] = socket;
   socket.on("message", (msgJson) => onMessage(msgJson, socket.id));
-});
-
-wsServer.on("close", (socket) => {
-  const toDelete = clients[socket.id];
-  console.log(toDelete.id, "disconnected");
-  wsServer.clients.forEach((client) => {
-    client.send(
-      JSON.stringify({
-        type: "delete",
-        username: toDelete.username,
-      })
-    );
-  });
-  delete clients[socket.id];
 });
 
 function onMessage(msgJson, id) {
