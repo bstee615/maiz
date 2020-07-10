@@ -54,15 +54,18 @@ function doCommand(client, cmd) {
       console.log("moving", cmd.delta);
       positions[username].x += cmd.delta.x;
       positions[username].y += cmd.delta.y;
-      client.send(
-        JSON.stringify({
-          type: "update",
-          username,
-          position: positions[username],
-        })
-      );
+      for (const id in clients) {
+        clients[id].send(
+          JSON.stringify({
+            type: "update",
+            username,
+            position: positions[username],
+          })
+        );
+      }
       break;
     default:
       console.log("unhandled cmd", cmd.cmd, cmd);
+      break;
   }
 }

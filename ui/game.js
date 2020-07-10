@@ -80,6 +80,9 @@ function onMessage(msg) {
       players[data.username] = data.position;
       redrawCanvas(players);
       break;
+    default:
+      console.log("unhandled cmd", cmd.cmd, cmd);
+      break;
   }
 }
 
