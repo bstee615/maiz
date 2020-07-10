@@ -1,8 +1,10 @@
 const express = require("express");
-const app = express();
-var path = require("path");
-var bodyParser = require("body-parser");
+const path = require("path");
+const bodyParser = require("body-parser");
+const WebSocket = require("ws");
 const port = 3000;
+
+const app = express();
 
 players = {};
 
@@ -33,6 +35,16 @@ app.post("/move", (req, res) => {
   console.log(`Moving ${username}`, delta);
 });
 
-app.listen(port, () =>
-  console.log(`Example app listening at http://localhost:${port}`)
-);
+const wsServer = new WebSocket.Server({
+  server: app.listen(port, () =>
+    console.log(`Example app listening at http://localhost:${port}`)
+  ),
+});
+
+wsServer.on("connection", (socket) => {
+  socket.on("message", (message) => {
+    wsServer.clients.forEach((client) => {
+      client.send(message);
+    });
+  });
+});

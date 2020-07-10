@@ -35,7 +35,7 @@
         body: JSON.stringify({ username }),
       });
 
-      setInterval(getUpdatedPositions, 1);
+      setInterval(getUpdatedPositions, 1000);
     }
 
     function getUpdatedPositions() {
@@ -58,5 +58,15 @@
         context.stroke();
       }
     }
+
+    const socket = new WebSocket("ws://localhost:3000");
+
+    socket.addEventListener("open", () => {
+      socket.send("Hello World!");
+    });
+
+    socket.addEventListener("message", (event) => {
+      console.log(`Message from server: ${event.data}`);
+    });
   </script>
 </html>
