@@ -2,21 +2,55 @@
   <head> </head>
   <body>
     <input id="username" type="text" placeholder="username" />
-    <button onclick="sendUsername()">Login</button>
-    <button onclick="sendMove(-1, 0)">Left</button>
-    <button onclick="sendMove(1, 0)">Right</button>
+    <button onclick="registerUsername()">Login</button>
 
-    <canvas id="maze" style="border: 1px solid black;"></canvas>
+    <canvas
+      id="maze"
+      width="400"
+      height="400"
+      style="border: 1px solid black;"
+      tabindex="0"
+    ></canvas>
   </body>
   <script>
     var socket;
+    var canvas = document.getElementById("maze");
+    const context = canvas.getContext("2d");
+    let players = {};
+    let keys = {
+      ArrowLeft: 0,
+      ArrowRight: 0,
+      ArrowUp: 0,
+      ArrowDown: 0,
+    };
 
-    function sendMove(x, y) {
+    canvas.addEventListener("keydown", function (ev) {
+      if (ev.key in keys) {
+        keys[ev.key] = 1;
+      }
+    });
+
+    canvas.addEventListener("keyup", function (ev) {
+      if (ev.key in keys) {
+        keys[ev.key] = 0;
+      }
+    });
+
+    function sendMove() {
       const username = document.getElementById("username").value;
-      const delta = {
-        x,
-        y,
+      let delta = {
+        x: 0,
+        y: 0,
       };
+
+      delta.x -= keys.ArrowLeft;
+      delta.x += keys.ArrowRight;
+      delta.y -= keys.ArrowUp;
+      delta.y += keys.ArrowDown;
+
+      if (delta.x === 0 && delta.y === 0) {
+        return;
+      }
 
       const cmd = {
         cmd: "move",
@@ -26,7 +60,7 @@
       socket.send(JSON.stringify(cmd));
     }
 
-    function sendUsername() {
+    function registerUsername() {
       const username = document.getElementById("username").value;
 
       socket = new WebSocket("ws://localhost:3000");
@@ -41,9 +75,9 @@
       });
 
       socket.addEventListener("message", onMessage);
+      setInterval(sendMove, 10);
     }
 
-    let players;
     function onMessage(msg) {
       console.log("message", msg);
       const data = JSON.parse(msg.data);
@@ -51,19 +85,17 @@
       switch (data.type) {
         case "initialize":
           players = data.players;
-          drawCanvas(players);
           break;
         case "update":
           console.log("update", data.username, data.pos);
           players[data.username] = data.pos;
-          drawCanvas(players);
           break;
       }
+
+      redrawCanvas(players);
     }
 
-    function drawCanvas(posByUsername) {
-      const canvas = document.getElementById("maze");
-      const context = canvas.getContext("2d");
+    function redrawCanvas(posByUsername) {
       console.log(`Update positions`, posByUsername);
       context.clearRect(0, 0, canvas.width, canvas.height);
 
