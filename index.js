@@ -1,31 +1,24 @@
 const express = require("express");
 const path = require("path");
-const bodyParser = require("body-parser");
 const WebSocket = require("ws");
 const uuid = require("uuid");
-const port = 3000;
 
 const app = express();
+const port = 3000;
 
-app.use(bodyParser.json());
-
-app.get("/", (_, res) => res.sendFile(path.join(__dirname + "/index.html")));
+app.use(express.static("ui"));
 
 app.get("/play", (req, res) => {
-  const username = req.params.username;
-  res.cookie("username", username);
-  res.sendFile(path.join(__dirname + "/play.html"));
+  res.cookie("username", req.params.username);
+  res.redirect("/game.html");
 });
 
-const wsServer = new WebSocket.Server(
-  {
-    server: app.listen(port, () =>
-      console.log(`Server listening at http://localhost:${port}`)
-    ),
-    path: "/play",
-  },
-  () => console.log(`WS listening at http://localhost:${port}/play`)
-);
+const wsServer = new WebSocket.Server({
+  server: app.listen(port, () =>
+    console.log(`Server listening at http://localhost:${port}`)
+  ),
+  path: "/play",
+});
 
 let clients = {};
 let players = {};
