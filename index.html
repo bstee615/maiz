@@ -1,0 +1,29 @@
+<html>
+  <head> </head>
+  <body>
+    <input id="username" type="text" placeholder="username" />
+    <input onclick="sendUsername()" type="button" value="Login" />
+  </body>
+  <script>
+    function sendUsername() {
+      const username = document.getElementById("username").value;
+      fetch("/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        redirect: "follow",
+        body: JSON.stringify({ username }),
+      });
+
+      setInterval(update(), 1000);
+    }
+
+    function update() {
+      const username = document.getElementById("username").value;
+      fetch(`/update/${username}`)
+        .then((res) => res.json())
+        .then((json) => console.log(`Update`, json));
+    }
+  </script>
+</html>
