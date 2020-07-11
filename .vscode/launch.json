@@ -5,6 +5,12 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Launch MazeDraw service",
+      "type": "python",
+      "request": "launch",
+      "module": "mazedraw.serve"
+    },
+    {
       "type": "node",
       "request": "launch",
       "name": "Launch Program",
