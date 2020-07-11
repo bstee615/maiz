@@ -2,6 +2,7 @@ const uuid = require("uuid");
 const WebSocket = require("ws");
 
 const config = require("./config");
+const state = require("./state");
 
 exports.listen = function (app) {
   const wsServer = new WebSocket.Server({
@@ -15,7 +16,6 @@ exports.listen = function (app) {
 };
 
 let clients = {};
-let positions = {};
 
 function onConnection(socket) {
   socket.id = uuid.v4();
@@ -24,48 +24,31 @@ function onConnection(socket) {
   socket.on("message", (msgJson) => onMessage(msgJson, socket.id));
 }
 
-function onMessage(msgJson, id) {
-  const client = clients[id];
-  const msg = JSON.parse(msgJson);
-  doCommand(client, msg);
+class NetCtx {
+  constructor(client) {
+    this.client = client;
+    this.username = client.username;
+  }
+
+  broadcast(msg) {
+    for (const id in clients) {
+      clients[id].send(msg);
+    }
+  }
+
+  send(msg) {
+    this.client.send(msg);
+  }
+
+  setUsername(username) {
+    this.username = username;
+    this.client.username = username;
+  }
 }
 
-function doCommand(client, cmd) {
-  switch (cmd.cmd) {
-    case "initialize":
-      client.username = cmd.username;
-      console.log("initialize", cmd.username);
-
-      positions[cmd.username] = {
-        x: 0,
-        y: 0,
-      };
-
-      client.send(
-        JSON.stringify({
-          type: "initialize",
-          positions,
-        })
-      );
-      break;
-    case "move":
-      const username = client.username;
-
-      console.log("moving", cmd.delta);
-      positions[username].x += cmd.delta.x;
-      positions[username].y += cmd.delta.y;
-      for (const id in clients) {
-        clients[id].send(
-          JSON.stringify({
-            type: "update",
-            username,
-            position: positions[username],
-          })
-        );
-      }
-      break;
-    default:
-      console.log("unhandled cmd", cmd.cmd, cmd);
-      break;
-  }
+function onMessage(msgJson, id) {
+  const client = clients[id];
+  const cmd = JSON.parse(msgJson);
+  const netCtx = new NetCtx(client);
+  state.doCmd(cmd, netCtx);
 }

@@ -9,7 +9,7 @@ var socket = new WebSocket("ws://localhost:3000/play");
 
 socket.addEventListener("open", () => {
   const cmd = {
-    cmd: "initialize",
+    code: "initialize",
     username,
   };
 
@@ -60,7 +60,7 @@ function move(x, y) {
   };
 
   const cmd = {
-    cmd: "move",
+    code: "move",
     delta,
   };
   socket.send(JSON.stringify(cmd));
@@ -70,7 +70,7 @@ function onMessage(msg) {
   console.log("message", msg);
   const data = JSON.parse(msg.data);
   console.log("data", data);
-  switch (data.type) {
+  switch (data.code) {
     case "initialize":
       players = data.positions;
       redrawCanvas(players);
