@@ -1,8 +1,3 @@
-const config = require("./config");
-
-const w = config.maze.w;
-const h = config.maze.h;
-
 function vector(row, col) {
   return {
     row,
@@ -89,7 +84,7 @@ function search(grid, walls, row, col) {
 }
 
 // Backtracking DFS repeatedly until all cells have been visited
-function generateMaze() {
+function generateMaze(w, h) {
   let grid = initGrid(w, h, () => false);
   let walls = initWalls(w, h);
 
@@ -112,9 +107,9 @@ function generateMaze() {
   return walls;
 }
 
-const walls = generateMaze();
-
-console.log(walls);
+const w = 10,
+  h = 10;
+const maze = generateMaze(w, h);
 
 sock = require("./socket");
-sock.send(walls);
+sock.send(w, h, maze);

@@ -1,49 +1,71 @@
+import signal
+import sys
+import select
 import json
 import socket
 import math
-from PIL import Image, ImageDraw
 
-with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    s.bind(("localhost", 2000))
-    s.listen()
-    conn, addr = s.accept()
-    with conn:
-        acc = b''
-        while True:
-            data = conn.recv(1024)
-            if not data:
-                break
-            acc += data
-        walls = json.loads(acc.decode("utf-8"))
-        w = 6
-        h = 10
-        size = 100
+from maze import draw_maze
 
-        # creating new Image object
-        img = Image.new("RGB", (w*size, h*size))
 
-        # create rectangle image
-        draw = ImageDraw.Draw(img)
-        # draw.line([(20, 30), (50, 60)])
+def get_config():
+    '''
+    Read and return the maze configuration
+    '''
 
-        # img.show()
+    with open("mazeconfig.json") as mazeconfig:
+        return json.load(mazeconfig)
 
-        for ir, row in enumerate(walls):
-            for ic, cell in enumerate(row):
-                for conn in cell:
-                    dr, dc = conn["row"] - ir, conn["col"] - ic
-                    print(ir, ic, conn["row"], conn["col"], dr, dc)
-                    if dr != 0:
-                        x = ic * size
-                        y = ((.5 + ir + (.5 * dr)) * size)
-                        tx = (ic+1) * size
-                        draw.line([(x, y), (tx, y)])
-                        print("row", x, y, tx)
-                    if dc != 0:
-                        x = ((.5 + ic + (.5 * dc)) * size)
-                        y = ir * size
-                        ty = (ir+1) * size
-                        draw.line([(x, y), (x, ty)])
-                        print("col", x, y, ty)
 
-        img.save("img1.png", "PNG")
+config = get_config()
+
+
+def process(message):
+    '''
+    Process message and return the results
+    '''
+
+    size = config["cellsize"]
+
+    draw_maze(message["maze"], message["width"], message["height"], size)
+
+
+def recv_all(conn):
+    '''
+    Read all bytes in chunks from conn
+    '''
+
+    acc = b''
+    while True:
+        data = conn.recv(1024)
+        if not data:
+            break
+        acc += data
+    return acc.decode("utf-8")
+
+
+def serve():
+    '''
+    Serve maze generation requests on loop
+    '''
+
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        s.bind(("localhost", config["port"]))
+        s.listen()
+        print(
+            f"Serving on http://localhost:{config['port']} until Ctrl+C is pressed...")
+        try:
+            while True:
+                conn, addr = s.accept()
+                with conn:
+                    message = recv_all(conn)
+                    maze_info = json.loads(message)
+
+                    process(maze_info)
+                conn.close()
+        finally:
+            conn.close()
+
+
+serve()

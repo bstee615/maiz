@@ -1,8 +1,11 @@
-var client = require("net").Socket();
+const net = require("net");
+const config = require("./config");
 
-exports.send = function (walls) {
-  client.connect(2000, "localhost");
-  client.write(JSON.stringify(walls));
+let client = net.Socket();
+
+exports.send = function (width, height, maze) {
+  client.connect(config.maze.port, "localhost");
+  client.write(JSON.stringify({ width, height, maze }));
 
   client.on("data", function (d) {
     console.log(d.toString());
