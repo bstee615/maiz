@@ -1,8 +1,10 @@
 
 from PIL import Image, ImageDraw
+import io
+import math
 
 
-def draw_maze(walls, w, h, size, show=True):
+def draw_maze(walls, w, h, size, show=False):
     img = Image.new("RGB", (w*size, h*size))
     draw = ImageDraw.Draw(img)
 
@@ -25,5 +27,11 @@ def draw_maze(walls, w, h, size, show=True):
 
                 else:
                     print("Bang Ding Ow")
+        print(f"{math.ceil(rowi+1/len(walls)*100)}% done")
     if show:
         img.show()
+
+    img_bytes = io.BytesIO()
+    img.save(img_bytes, format='PNG')
+
+    return img_bytes

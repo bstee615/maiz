@@ -5,7 +5,7 @@ import json
 import socket
 import math
 
-from maze import draw_maze
+from .maze import draw_maze
 
 
 def get_config():
@@ -27,7 +27,7 @@ def process(message):
 
     size = config["cellsize"]
 
-    draw_maze(message["maze"], message["width"], message["height"], size)
+    return draw_maze(message["maze"], message["width"], message["height"], size)
 
 
 def recv_all(conn):
@@ -53,16 +53,19 @@ def serve():
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         s.bind(("localhost", config["port"]))
         s.listen()
+
         print(
             f"Serving on http://localhost:{config['port']} until Ctrl+C is pressed...")
         try:
             while True:
                 conn, addr = s.accept()
+                print("Request from", addr)
                 with conn:
                     message = recv_all(conn)
                     maze_info = json.loads(message)
 
-                    process(maze_info)
+                    img = process(maze_info)
+                    conn.send(img.getvalue())
                 conn.close()
         finally:
             conn.close()

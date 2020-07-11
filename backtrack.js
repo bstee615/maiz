@@ -20,7 +20,7 @@ function initGrid(w, h, initializer) {
   return grid;
 }
 
-function inBounds(r, c) {
+function inBounds(r, c, w, h) {
   return r >= 0 && r < h && c >= 0 && c < w;
 }
 
@@ -37,7 +37,7 @@ function initWalls(w, h) {
   for (let r = 0; r < h; r++) {
     for (let c = 0; c < w; c++) {
       forCross(r, c, (ar, ac) => {
-        if (inBounds(ar, ac)) {
+        if (inBounds(ar, ac, w, h)) {
           walls[r][c].push(vector(ar, ac));
         }
       });
@@ -46,10 +46,10 @@ function initWalls(w, h) {
   return walls;
 }
 
-function getUnvisitedNeighbors(grid, r, c) {
+function getUnvisitedNeighbors(grid, r, c, w, h) {
   let n = [];
   forCross(r, c, (ar, ac) => {
-    if (inBounds(ar, ac) && grid[ar][ac] !== true) {
+    if (inBounds(ar, ac, w, h) && grid[ar][ac] !== true) {
       n.push(vector(ar, ac));
     }
   });
@@ -64,9 +64,9 @@ function disconnectOneWay(walls, a, b) {
 }
 
 // DFS from row, col until we hit a dead end.
-function search(grid, walls, row, col) {
+function search(grid, walls, w, h, row, col) {
   grid[row][col] = true;
-  let unvisited = getUnvisitedNeighbors(grid, row, col);
+  let unvisited = getUnvisitedNeighbors(grid, row, col, w, h);
   while (unvisited.length > 0) {
     const index = randInt(unvisited.length);
     const me = { row, col };
@@ -78,7 +78,7 @@ function search(grid, walls, row, col) {
       grid[other.row][other.col] = true;
       disconnectOneWay(walls, me, other);
       disconnectOneWay(walls, other, me);
-      search(grid, walls, other.row, other.col);
+      search(grid, walls, w, h, other.row, other.col);
     }
   }
 }
@@ -101,15 +101,21 @@ function generateMaze(w, h) {
   while (gridHasUnvisitedCells()) {
     const unvisited = getUnvisitedCellsInGrid();
     const choice = unvisited[randInt(unvisited.length)];
-    search(grid, walls, choice.row, choice.col);
+    search(grid, walls, w, h, choice.row, choice.col);
   }
 
   return walls;
 }
 
-const w = 10,
-  h = 10;
-const maze = generateMaze(w, h);
+exports.gen = generateMaze;
 
-sock = require("./socket");
-sock.send(w, h, maze);
+if (require.main === module) {
+  const w = 10,
+    h = 10;
+  const maze = generateMaze(w, h);
+  console.log(maze);
+  mazedraw = require("./mazedraw");
+  mazedraw.draw(w, h, maze, (d) =>
+    console.log(`Got a reply of ${d.length} bytes`)
+  );
+}
