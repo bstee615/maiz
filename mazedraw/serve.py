@@ -43,6 +43,43 @@ def recv_all(conn):
     return acc.decode("utf-8")
 
 
+def service_request(sock):
+    conn = None
+    try:
+        conn, addr = sock.accept()
+        print("Request from", addr)
+        with conn:
+            message = recv_all(conn)
+            maze_info = json.loads(message)
+
+            img = process(maze_info)
+            conn.send(img.getvalue())
+    finally:
+        if conn:
+            conn.close()
+
+
+def run_safely(sock):
+    '''
+    Run server and handle exceptions
+    '''
+
+    running = True
+
+    while running:
+        try:
+            service_request(sock)
+        except socket.timeout:
+            pass
+        except (SystemExit, KeyboardInterrupt):
+            running = False
+            break
+        except Exception as ex:
+            print("Fatal Error!")
+            print(str(ex))
+            raise
+
+
 def serve():
     '''
     Serve maze generation requests on loop
@@ -50,25 +87,16 @@ def serve():
     config = get_config()
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        s.settimeout(1.0)
         s.bind(("localhost", config["port"]))
         s.listen()
 
-        print(
-            f"Serving on http://localhost:{config['port']} until Ctrl+C is pressed...")
-        try:
-            while True:
-                conn, addr = s.accept()
-                print("Request from", addr)
-                with conn:
-                    message = recv_all(conn)
-                    maze_info = json.loads(message)
+        print(f"Serving on http://localhost:{config['port']}")
+        print("Press Ctrl+C to exit...")
 
-                    img = process(maze_info)
-                    conn.send(img.getvalue())
-                conn.close()
-        finally:
-            conn.close()
+        run_safely(s)
+
+        print("Exiting....")
 
 
 serve()
