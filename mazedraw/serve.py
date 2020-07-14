@@ -17,17 +17,16 @@ def get_config():
         return json.load(mazeconfig)
 
 
-config = get_config()
-
-
 def process(message):
     '''
     Process message and return the results
     '''
 
+    config = get_config()
     size = config["cellsize"]
+    show_image = config["showImage"]
 
-    return draw_maze(message["maze"], message["width"], message["height"], size)
+    return draw_maze(message["maze"], message["width"], message["height"], size, show=show_image)
 
 
 def recv_all(conn):
@@ -48,6 +47,7 @@ def serve():
     '''
     Serve maze generation requests on loop
     '''
+    config = get_config()
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)

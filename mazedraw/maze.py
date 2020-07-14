@@ -27,7 +27,7 @@ def draw_maze(walls, w, h, size, show=False):
 
                 else:
                     print("Bang Ding Ow")
-        print(f"{math.ceil(rowi+1/len(walls)*100)}% done")
+        print(f"{math.ceil(((rowi+1)/len(walls))*100)}% done")
     if show:
         img.show()
 
