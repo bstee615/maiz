@@ -12,10 +12,10 @@ let keys = {
 
 const width = 400,
   height = 400;
-const numCells = 30;
+const numCells = 10;
 const squareSize = width / numCells;
 
-exports.initialize = function (w, h) {
+exports.initialize = function () {
   canvas = document.createElement("canvas");
   context = canvas.getContext("2d");
 
@@ -68,7 +68,7 @@ exports.initialize = function (w, h) {
 
 let mapImage;
 
-exports.setMap = function (imageBase64, callback) {
+exports.setMap = function (imageBase64) {
   // https://web.dev/promises/
   return new Promise(function (resolve, reject) {
     let img = new Image();

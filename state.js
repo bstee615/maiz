@@ -3,16 +3,15 @@ const backtrack = require("./backtrack");
 
 let positions = {};
 let maze;
-let start;
-const w = 30,
-  h = 30;
+const w = 10,
+  h = 10;
 
 function inBounds(pos) {
   return pos.x >= 0 && pos.x < w && pos.y >= 0 && pos.y < h;
 }
 
 function wallBlocks(oldPos, newPos) {
-  for (const other of maze[oldPos.y][oldPos.x]) {
+  for (const other of maze.walls[oldPos.y][oldPos.x]) {
     if (other.col === newPos.x && other.row === newPos.y) {
       return true;
     }
@@ -31,6 +30,15 @@ function validMove(oldPos, newPos) {
   return true;
 }
 
+function wins(playerPos) {
+  for (const pos of maze.ends) {
+    if (pos.point.row == playerPos.y && pos.point.col == playerPos.x) {
+      return true;
+    }
+  }
+  return false;
+}
+
 exports.doCmd = function (cmd, ctx) {
   switch (cmd.code) {
     case "initialize":
@@ -38,17 +46,15 @@ exports.doCmd = function (cmd, ctx) {
       console.log("initialize", cmd.username);
 
       if (!maze) {
-        const mazeInfo = backtrack.gen(w, h);
-        maze = mazeInfo.walls;
-        start = mazeInfo.startingPoint;
+        maze = backtrack.gen(w, h);
       }
 
       positions[cmd.username] = {
-        x: start.col,
-        y: start.row,
+        x: maze.startingPoint.col,
+        y: maze.startingPoint.row,
       };
 
-      mazedraw.draw(w, h, maze, start, (mazeMap) =>
+      mazedraw.draw(w, h, maze, (mazeMap) =>
         ctx.send(
           JSON.stringify({
             code: "initialize",
@@ -78,6 +84,15 @@ exports.doCmd = function (cmd, ctx) {
           position: positions[ctx.username],
         })
       );
+
+      if (wins(newPosition)) {
+        ctx.broadcast(
+          JSON.stringify({
+            code: "win",
+            username: ctx.username,
+          })
+        );
+      }
       break;
     default:
       console.log("unhandled code", cmd);

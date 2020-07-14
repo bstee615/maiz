@@ -21,7 +21,7 @@ exports.update = function (data) {
       canvas.redraw();
       break;
     default:
-      console.log("unhandled cmd", cmd.cmd, cmd);
+      console.log("unhandled code", data.code, data);
       break;
   }
 };
