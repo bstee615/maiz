@@ -96,12 +96,13 @@ exports.redraw = function () {
     const pos = positionsByPlayer[username];
     context.strokeStyle = "#FF0000";
     context.beginPath();
-    context.rect(
-      pos.x * squareSize,
-      pos.y * squareSize,
-      squareSize,
-      squareSize
+    context.arc(
+      pos.x * squareSize + squareSize / 2,
+      pos.y * squareSize + squareSize / 2,
+      squareSize / 2,
+      squareSize / 2,
+      2 * Math.PI
     );
-    context.stroke();
+    context.fill();
   }
 };
