@@ -88,13 +88,17 @@ exports.setPositions = function (positions) {
   positionsByPlayer = positions;
 };
 
+let color;
+
+exports.setColor = (c) => (color = c);
+
 exports.redraw = function () {
   context.clearRect(0, 0, canvas.width, canvas.height);
   context.drawImage(mapImage, 0, 0, canvas.width, canvas.height);
 
   for (const username in positionsByPlayer) {
     const pos = positionsByPlayer[username];
-    context.fillStyle = "#FF0000";
+    context.fillStyle = pos.color;
 
     context.beginPath();
     context.arc(

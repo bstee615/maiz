@@ -49,9 +49,13 @@ exports.doCmd = function (cmd, ctx) {
         maze = backtrack.gen(w, h);
       }
 
+      var randomColor = require("randomcolor");
+      const color = randomColor();
+
       positions[cmd.username] = {
         x: maze.startingPoint.col,
         y: maze.startingPoint.row,
+        color,
       };
 
       mazedraw.draw(w, h, maze, (mazeMap) => {
@@ -62,13 +66,16 @@ exports.doCmd = function (cmd, ctx) {
             map: mazeMap.toString("base64"),
             w,
             h,
+            color,
+          })
+        );
         ctx.broadcast(
           JSON.stringify({
             code: "join",
             username: ctx.username,
             position: positions[ctx.username],
           })
-      );
+        );
       });
       break;
     case "move":

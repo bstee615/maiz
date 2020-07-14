@@ -25,8 +25,7 @@ exports.update = function (data, username) {
       break;
     case "update":
       console.log("update", data.username, data.position);
-      players[data.username] = data.position;
-      canvas.setPositions(players);
+      Object.assign(players[data.username], data.position);
       canvas.redraw();
       break;
     default:
