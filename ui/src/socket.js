@@ -27,11 +27,11 @@ exports.connect = function (username) {
       })
     );
   });
-  socket.addEventListener("message", onMessage);
+  socket.addEventListener("message", (msg) => onMessage(msg, username));
 };
 
-function onMessage(msg) {
+function onMessage(msg, username) {
   console.log("message", msg);
   const data = JSON.parse(msg.data);
-  model.update(data);
+  model.update(data, username);
 }

@@ -2,7 +2,7 @@ const canvas = require("./canvas");
 
 let players = {};
 
-exports.update = function (data) {
+exports.update = function (data, username) {
   console.log("data", data);
   switch (data.code) {
     case "initialize":
@@ -14,6 +14,14 @@ exports.update = function (data) {
         .setMap(map)
         .then(() => canvas.redraw())
         .catch((err) => console.error("error setting map", err));
+      break;
+    case "join":
+      if (username === data.username) {
+        break;
+      }
+      console.log("join", data.username, data.position);
+      players[data.username] = data.position;
+      canvas.redraw();
       break;
     case "update":
       console.log("update", data.username, data.position);

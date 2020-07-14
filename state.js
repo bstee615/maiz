@@ -54,7 +54,7 @@ exports.doCmd = function (cmd, ctx) {
         y: maze.startingPoint.row,
       };
 
-      mazedraw.draw(w, h, maze, (mazeMap) =>
+      mazedraw.draw(w, h, maze, (mazeMap) => {
         ctx.send(
           JSON.stringify({
             code: "initialize",
@@ -62,9 +62,14 @@ exports.doCmd = function (cmd, ctx) {
             map: mazeMap.toString("base64"),
             w,
             h,
+        ctx.broadcast(
+          JSON.stringify({
+            code: "join",
+            username: ctx.username,
+            position: positions[ctx.username],
           })
-        )
       );
+      });
       break;
     case "move":
       const oldPosition = positions[ctx.username];
