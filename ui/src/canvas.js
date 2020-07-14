@@ -94,7 +94,8 @@ exports.redraw = function () {
 
   for (const username in positionsByPlayer) {
     const pos = positionsByPlayer[username];
-    context.strokeStyle = "#FF0000";
+    context.fillStyle = "#FF0000";
+
     context.beginPath();
     context.arc(
       pos.x * squareSize + squareSize / 2,

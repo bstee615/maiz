@@ -26,7 +26,7 @@ def process(message):
     size = config["cellsize"]
     show_image = config["showImage"]
 
-    return draw_maze(message["maze"], message["width"], message["height"], size, show=show_image)
+    return draw_maze(message["walls"], message["startingPoint"], message["width"], message["height"], size, show=show_image)
 
 
 def recv_all(conn):

@@ -3,6 +3,7 @@ const backtrack = require("./backtrack");
 
 let positions = {};
 let maze;
+let start;
 const w = 30,
   h = 30;
 
@@ -36,15 +37,18 @@ exports.doCmd = function (cmd, ctx) {
       ctx.setUsername(cmd.username);
       console.log("initialize", cmd.username);
 
+      if (!maze) {
+        const mazeInfo = backtrack.gen(w, h);
+        maze = mazeInfo.walls;
+        start = mazeInfo.startingPoint;
+      }
+
       positions[cmd.username] = {
-        x: 0,
-        y: 0,
+        x: start.col,
+        y: start.row,
       };
 
-      if (!maze) {
-        maze = backtrack.gen(w, h);
-      }
-      mazedraw.draw(w, h, maze, (mazeMap) =>
+      mazedraw.draw(w, h, maze, start, (mazeMap) =>
         ctx.send(
           JSON.stringify({
             code: "initialize",

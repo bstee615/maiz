@@ -4,9 +4,14 @@ import io
 import math
 
 
-def draw_maze(walls, w, h, size, show=False):
+def draw_maze(walls, start, w, h, size, show=False):
     img = Image.new("RGB", (w*size, h*size))
     draw = ImageDraw.Draw(img)
+
+    # Draw an X at the start
+    # print(start)
+    draw.rectangle([((start["col"])*size, (start["row"])*size),
+                    ((start["col"]+1)*size, (start["row"]+1)*size)], fill="green", width=3)
 
     for rowi, row in enumerate(walls):
         for coli, col in enumerate(row):

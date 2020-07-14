@@ -83,6 +83,34 @@ function search(grid, walls, w, h, row, col) {
   }
 }
 
+function findGoodChoice(choices, w, h) {
+  let best = null;
+  const middle = {
+    row: h / 2,
+    col: w / 2,
+  };
+
+  for (const choice of choices) {
+    const dist = {
+      row: Math.abs(middle.row - choice.row),
+      col: Math.abs(middle.col - choice.col),
+    };
+
+    const cartesianDistance = Math.sqrt(
+      Math.pow(dist.row, 2) + Math.pow(dist.col, 2)
+    );
+
+    if (!best || best.distance < cartesianDistance) {
+      best = {
+        point: choice,
+        distance: cartesianDistance,
+      };
+    }
+  }
+
+  return best.point;
+}
+
 // Backtracking DFS repeatedly until all cells have been visited
 function generateMaze(w, h) {
   let grid = initGrid(w, h, () => false);
@@ -98,13 +126,27 @@ function generateMaze(w, h) {
       .flat();
   const gridHasUnvisitedCells = () => getUnvisitedCellsInGrid().length > 0;
 
+  let allChoices = [];
+
   while (gridHasUnvisitedCells()) {
-    const unvisited = getUnvisitedCellsInGrid();
-    const choice = unvisited[randInt(unvisited.length)];
-    search(grid, walls, w, h, choice.row, choice.col);
+    // const choices = getUnvisitedCellsInGrid();
+    const choices = [
+      {
+        row: Math.floor(h / 2),
+        col: Math.floor(w / 2),
+      },
+    ];
+    const start = choices[randInt(choices.length)];
+    search(grid, walls, w, h, start.row, start.col);
+    allChoices.push(start);
   }
 
-  return walls;
+  const startingPoint = findGoodChoice(allChoices, w, h);
+
+  return {
+    walls,
+    startingPoint,
+  };
 }
 
 exports.gen = generateMaze;
@@ -112,10 +154,13 @@ exports.gen = generateMaze;
 if (require.main === module) {
   const w = 10,
     h = 10;
-  const maze = generateMaze(w, h);
-  console.log(maze);
+  const result = generateMaze(w, h);
+  const maze = result.walls;
+  const start = result.startingPoint;
+  // console.log(maze);
+  console.log(start);
   mazedraw = require("./mazedraw");
-  mazedraw.draw(w, h, maze, (d) =>
+  mazedraw.draw(w, h, maze, start, (d) =>
     console.log(`Got a reply of ${d.length} bytes`)
   );
 }
