@@ -1,4 +1,8 @@
+const mazedraw = require("./mazedraw");
+const backtrack = require("./backtrack");
+
 let positions = {};
+let maze;
 
 exports.doCmd = function (cmd, ctx) {
   switch (cmd.code) {
@@ -11,11 +15,19 @@ exports.doCmd = function (cmd, ctx) {
         y: 0,
       };
 
-      ctx.send(
-        JSON.stringify({
-          code: "initialize",
-          positions,
-        })
+      const w = 30,
+        h = 30;
+      if (!maze) {
+        maze = backtrack.gen(w, h);
+      }
+      mazedraw.draw(w, h, maze, (mazeMap) =>
+        ctx.send(
+          JSON.stringify({
+            code: "initialize",
+            positions,
+            map: mazeMap.toString("base64"),
+          })
+        )
       );
       break;
     case "move":
