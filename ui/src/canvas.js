@@ -10,12 +10,17 @@ let keys = {
   ArrowDown: false,
 };
 
+const width = 400,
+  height = 400;
+const numCells = 30;
+const squareSize = width / numCells;
+
 exports.initialize = function (w, h) {
   canvas = document.createElement("canvas");
   context = canvas.getContext("2d");
 
-  canvas.width = "400";
-  canvas.height = "400";
+  canvas.width = width.toString();
+  canvas.height = height.toString();
   canvas.style = "border: 1px solid black;";
 
   document.body.appendChild(canvas);
@@ -61,13 +66,35 @@ exports.initialize = function (w, h) {
   });
 };
 
-exports.redraw = function (posByUsername) {
-  console.log(`Update positions`, posByUsername);
-  context.clearRect(0, 0, canvas.width, canvas.height);
+let mapImage;
 
-  for (const username in posByUsername) {
-    const pos = posByUsername[username];
-    const squareSize = canvas.width / 40;
+exports.setMap = function (imageBase64, callback) {
+  // https://web.dev/promises/
+  return new Promise(function (resolve, reject) {
+    let img = new Image();
+    img.onload = function () {
+      mapImage = img;
+      resolve();
+    };
+    img.onerror = reject;
+    img.src = "data:image/png;base64," + imageBase64;
+  });
+};
+
+let positionsByPlayer = {};
+
+exports.setPositions = function (positions) {
+  console.log(`Update positions`, positions);
+  positionsByPlayer = positions;
+};
+
+exports.redraw = function () {
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  context.drawImage(mapImage, 0, 0, canvas.width, canvas.height);
+
+  for (const username in positionsByPlayer) {
+    const pos = positionsByPlayer[username];
+    context.strokeStyle = "#FF0000";
     context.beginPath();
     context.rect(
       pos.x * squareSize,

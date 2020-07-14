@@ -7,12 +7,18 @@ exports.update = function (data) {
   switch (data.code) {
     case "initialize":
       players = data.positions;
-      canvas.redraw(players);
+      const map = data.map;
+      canvas.setPositions(players);
+      canvas
+        .setMap(map)
+        .then(() => canvas.redraw())
+        .catch((err) => console.error("error setting map", err));
       break;
     case "update":
       console.log("update", data.username, data.position);
       players[data.username] = data.position;
-      canvas.redraw(players);
+      canvas.setPositions(players);
+      canvas.redraw();
       break;
     default:
       console.log("unhandled cmd", cmd.cmd, cmd);
