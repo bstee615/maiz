@@ -17,7 +17,7 @@ exports.sendMove = function (x, y) {
 };
 
 exports.connect = function (username) {
-  socket = new WebSocket("ws://localhost:3000/play");
+  socket = new WebSocket("ws://" + location.host + "/play/");
 
   socket.addEventListener("open", () => {
     socket.send(
