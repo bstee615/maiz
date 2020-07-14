@@ -5,9 +5,10 @@ const config = require("./config");
 
 let client = net.Socket();
 
-exports.draw = function (width, height, walls, startingPoint, cb) {
+exports.draw = function (width, height, maze, cb) {
+  const { walls, startingPoint, ends } = maze;
   client.connect(config.maze.port, "localhost");
-  client.write(JSON.stringify({ width, height, walls, startingPoint }));
+  client.write(JSON.stringify({ width, height, walls, startingPoint, ends }));
 
   client.on("data", function (data) {
     cb(data);

@@ -4,7 +4,7 @@ import io
 import math
 
 
-def draw_maze(walls, start, w, h, size, show=False):
+def draw_maze(walls, start, ends, w, h, size, show=False):
     img = Image.new("RGB", (w*size, h*size))
     draw = ImageDraw.Draw(img)
 
@@ -12,6 +12,11 @@ def draw_maze(walls, start, w, h, size, show=False):
     # print(start)
     draw.rectangle([((start["col"])*size, (start["row"])*size),
                     ((start["col"]+1)*size, (start["row"]+1)*size)], fill="green", width=3)
+
+    for obj in ends:
+        point = obj["point"]
+        draw.rectangle([((point["col"])*size, (point["row"])*size),
+                        ((point["col"]+1)*size, (point["row"]+1)*size)], fill="blue", width=3)
 
     for rowi, row in enumerate(walls):
         for coli, col in enumerate(row):

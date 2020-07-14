@@ -64,9 +64,24 @@ function disconnectOneWay(walls, a, b) {
 }
 
 // DFS from row, col until we hit a dead end.
-function search(grid, walls, w, h, row, col) {
+function search(grid, walls, w, h, row, col, length = 0) {
   grid[row][col] = true;
   let unvisited = getUnvisitedNeighbors(grid, row, col, w, h);
+
+  if (unvisited.length == 0 && length) {
+    return [
+      {
+        point: {
+          row,
+          col,
+        },
+        length,
+      },
+    ];
+  }
+
+  let all = [];
+
   while (unvisited.length > 0) {
     const index = randInt(unvisited.length);
     const me = { row, col };
@@ -78,9 +93,13 @@ function search(grid, walls, w, h, row, col) {
       grid[other.row][other.col] = true;
       disconnectOneWay(walls, me, other);
       disconnectOneWay(walls, other, me);
-      search(grid, walls, w, h, other.row, other.col);
+
+      const ends = search(grid, walls, w, h, other.row, other.col, length + 1);
+      all.push(...ends);
     }
   }
+
+  return all;
 }
 
 // Backtracking DFS repeatedly until all cells have been visited
@@ -92,11 +111,20 @@ function generateMaze(w, h) {
     row: Math.floor(h / 2),
     col: Math.floor(w / 2),
   };
-  search(grid, walls, w, h, middle.row, middle.col);
+  const ends = search(grid, walls, w, h, middle.row, middle.col);
+  console.log(ends);
+  const threshold = 20;
+  console.log("threshold", threshold);
+  const choppedEnds = ends.filter((e) => e.length > threshold);
+  const randomChoppedEnds = choppedEnds
+    .sort(() => 0.5 - Math.random())
+    .slice(0, Math.min(3, ends.length));
+  console.log("top");
 
   return {
     walls,
     startingPoint: middle,
+    ends: randomChoppedEnds,
   };
 }
 
@@ -105,13 +133,11 @@ exports.gen = generateMaze;
 if (require.main === module) {
   const w = 10,
     h = 10;
-  const result = generateMaze(w, h);
-  const maze = result.walls;
-  const start = result.startingPoint;
+  const maze = generateMaze(w, h);
   // console.log(maze);
-  console.log(start);
+  // console.log(start);
   mazedraw = require("./mazedraw");
-  mazedraw.draw(w, h, maze, start, (d) =>
+  mazedraw.draw(w, h, maze, (d) =>
     console.log(`Got a reply of ${d.length} bytes`)
   );
 }
