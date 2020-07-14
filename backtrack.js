@@ -83,69 +83,20 @@ function search(grid, walls, w, h, row, col) {
   }
 }
 
-function findGoodChoice(choices, w, h) {
-  let best = null;
-  const middle = {
-    row: h / 2,
-    col: w / 2,
-  };
-
-  for (const choice of choices) {
-    const dist = {
-      row: Math.abs(middle.row - choice.row),
-      col: Math.abs(middle.col - choice.col),
-    };
-
-    const cartesianDistance = Math.sqrt(
-      Math.pow(dist.row, 2) + Math.pow(dist.col, 2)
-    );
-
-    if (!best || best.distance < cartesianDistance) {
-      best = {
-        point: choice,
-        distance: cartesianDistance,
-      };
-    }
-  }
-
-  return best.point;
-}
-
 // Backtracking DFS repeatedly until all cells have been visited
 function generateMaze(w, h) {
   let grid = initGrid(w, h, () => false);
   let walls = initWalls(w, h);
 
-  const getUnvisitedCellsInGrid = () =>
-    grid
-      .map((r, ir) =>
-        r
-          .map((e, ic) => (e === false ? { row: ir, col: ic } : null))
-          .filter((e) => e != null)
-      )
-      .flat();
-  const gridHasUnvisitedCells = () => getUnvisitedCellsInGrid().length > 0;
-
-  let allChoices = [];
-
-  while (gridHasUnvisitedCells()) {
-    // const choices = getUnvisitedCellsInGrid();
-    const choices = [
-      {
-        row: Math.floor(h / 2),
-        col: Math.floor(w / 2),
-      },
-    ];
-    const start = choices[randInt(choices.length)];
-    search(grid, walls, w, h, start.row, start.col);
-    allChoices.push(start);
-  }
-
-  const startingPoint = findGoodChoice(allChoices, w, h);
+  const middle = {
+    row: Math.floor(h / 2),
+    col: Math.floor(w / 2),
+  };
+  search(grid, walls, w, h, middle.row, middle.col);
 
   return {
     walls,
-    startingPoint,
+    startingPoint: middle,
   };
 }
 
