@@ -27,7 +27,6 @@ function onConnection(socket) {
 class NetCtx {
   constructor(client) {
     this.client = client;
-    this.username = client.username;
   }
 
   broadcast(msg) {
@@ -40,8 +39,11 @@ class NetCtx {
     this.client.send(msg);
   }
 
+  get username() {
+    return this.client.username;
+  }
+
   setUsername(username) {
-    this.username = username;
     this.client.username = username;
   }
 }
