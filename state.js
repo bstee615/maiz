@@ -89,6 +89,15 @@ exports.doCmd = function (cmd, ctx) {
 
       if (validMove(oldPosition, newPosition)) {
         positions[ctx.username] = newPosition;
+
+        if (wins(newPosition)) {
+          ctx.broadcast(
+            JSON.stringify({
+              code: "win",
+              username: ctx.username,
+            })
+          );
+        }
       }
 
       ctx.broadcast(
@@ -98,15 +107,6 @@ exports.doCmd = function (cmd, ctx) {
           position: positions[ctx.username],
         })
       );
-
-      if (wins(newPosition)) {
-        ctx.broadcast(
-          JSON.stringify({
-            code: "win",
-            username: ctx.username,
-          })
-        );
-      }
       break;
     default:
       console.log("unhandled code", cmd);
