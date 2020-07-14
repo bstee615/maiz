@@ -28,6 +28,12 @@ exports.update = function (data, username) {
       Object.assign(players[data.username], data.position);
       canvas.redraw();
       break;
+    case "win":
+      // canvas.remove();
+      const won = document.createElement("div");
+      won.textContent = `${data.username} won!`;
+      document.body.appendChild(won);
+      break;
     default:
       console.log("unhandled code", data.code, data);
       break;
