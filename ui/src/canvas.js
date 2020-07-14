@@ -10,17 +10,17 @@ let keys = {
   ArrowDown: false,
 };
 
-const width = 400,
-  height = 400;
-const numCells = 10;
-const squareSize = width / numCells;
+let width, height;
+const squareSize = 30;
 
-exports.initialize = function () {
+exports.initialize = function (w, h) {
   canvas = document.createElement("canvas");
   context = canvas.getContext("2d");
 
-  canvas.width = width.toString();
-  canvas.height = height.toString();
+  width = w;
+  height = h;
+  canvas.width = (width * squareSize).toString();
+  canvas.height = (height * squareSize).toString();
   canvas.style = "border: 1px solid black;";
 
   document.body.appendChild(canvas);

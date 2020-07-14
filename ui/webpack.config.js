@@ -1,6 +1,5 @@
 const path = require("path");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
-const CopyWebpackPlugin = require("copy-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = {
@@ -17,18 +16,11 @@ module.exports = {
     maxAssetSize: 512000,
   },
   plugins: [
-    new CopyWebpackPlugin({
-      patterns: [
-        {
-          from: "./index.html",
-        },
-      ],
-    }),
     new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({
       title: "Maiz",
       favicon: "./favicon.ico",
-      filename: "game.html",
+      filename: "index.html",
     }),
   ],
 };

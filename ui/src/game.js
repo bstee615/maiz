@@ -1,13 +1,17 @@
-const canvas = require("./canvas");
 const socket = require("./socket");
 
-canvas.initialize(400, 400);
+const usernameInput = document.createElement("input");
+usernameInput.type = "text";
+usernameInput.placeholder = "username";
+document.body.appendChild(usernameInput);
 
-function getCookie(name) {
-  const value = "; " + document.cookie;
-  const parts = value.split("; " + name + "=");
-  if (parts.length === 2) return parts.pop().split(";").shift();
-}
-const username = getCookie("username");
+const username = () => usernameInput.value;
 
-socket.connect(username);
+const loginButton = document.createElement("button");
+loginButton.textContent = "Login";
+loginButton.addEventListener("click", () => {
+  usernameInput.remove();
+  loginButton.remove();
+  socket.connect(username());
+});
+document.body.appendChild(loginButton);

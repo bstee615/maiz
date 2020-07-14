@@ -11,9 +11,4 @@ app.use(
   })
 );
 
-app.get("/play", (req, res) => {
-  res.cookie("username", req.query.username);
-  res.redirect("/game.html");
-});
-
 gamesocket.listen(app);

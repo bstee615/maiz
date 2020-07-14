@@ -60,6 +60,8 @@ exports.doCmd = function (cmd, ctx) {
             code: "initialize",
             positions,
             map: mazeMap.toString("base64"),
+            w,
+            h,
           })
         )
       );

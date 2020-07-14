@@ -9,6 +9,7 @@ exports.update = function (data) {
       players = data.positions;
       const map = data.map;
       canvas.setPositions(players);
+      canvas.initialize(data.w, data.h);
       canvas
         .setMap(map)
         .then(() => canvas.redraw())
