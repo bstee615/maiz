@@ -3,6 +3,32 @@ const backtrack = require("./backtrack");
 
 let positions = {};
 let maze;
+const w = 30,
+  h = 30;
+
+function inBounds(pos) {
+  return pos.x >= 0 && pos.x < w && pos.y >= 0 && pos.y < h;
+}
+
+function wallBlocks(oldPos, newPos) {
+  for (const other of maze[oldPos.y][oldPos.x]) {
+    if (other.col === newPos.x && other.row === newPos.y) {
+      return true;
+    }
+  }
+}
+
+function validMove(oldPos, newPos) {
+  if (!inBounds(newPos)) {
+    return false;
+  }
+
+  if (wallBlocks(oldPos, newPos)) {
+    return false;
+  }
+
+  return true;
+}
 
 exports.doCmd = function (cmd, ctx) {
   switch (cmd.code) {
@@ -15,8 +41,6 @@ exports.doCmd = function (cmd, ctx) {
         y: 0,
       };
 
-      const w = 30,
-        h = 30;
       if (!maze) {
         maze = backtrack.gen(w, h);
       }
@@ -31,17 +55,23 @@ exports.doCmd = function (cmd, ctx) {
       );
       break;
     case "move":
-      let position = positions[ctx.username];
-      position.x += cmd.delta.x;
-      position.y += cmd.delta.y;
+      const oldPosition = positions[ctx.username];
+      const newPosition = {
+        x: oldPosition.x + cmd.delta.x,
+        y: oldPosition.y + cmd.delta.y,
+      };
 
-      console.log("moving", cmd.delta, "to", position);
+      console.log("moving", cmd.delta, "from", oldPosition, "to", newPosition);
+
+      if (validMove(oldPosition, newPosition)) {
+        positions[ctx.username] = newPosition;
+      }
 
       ctx.broadcast(
         JSON.stringify({
           code: "update",
           username: ctx.username,
-          position,
+          position: positions[ctx.username],
         })
       );
       break;
