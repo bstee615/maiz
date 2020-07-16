@@ -5,7 +5,7 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 module.exports = {
   mode: "development",
   devtool: "source-map",
-  entry: "./src/game.js",
+  entry: "./src/index.js",
   output: {
     filename: "[name].[contenthash].js",
     path: path.resolve(__dirname, "dist"),
@@ -18,9 +18,9 @@ module.exports = {
   plugins: [
     new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({
-      title: "Maiz",
       favicon: "./favicon.ico",
       filename: "index.html",
+      template: __dirname + "/index.html",
     }),
   ],
 };
