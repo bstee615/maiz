@@ -9,7 +9,7 @@ exports.listen = function (app) {
     server: app.listen(config.port, () =>
       console.log(`Server listening at http://localhost:${config.port}`)
     ),
-    path: "/play",
+    path: "/play/",
   });
 
   wsServer.on("connection", onConnection);
