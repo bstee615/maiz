@@ -14,8 +14,11 @@ let width, height;
 const squareSize = 30;
 
 exports.initialize = function (w, h) {
-  canvas = document.createElement("canvas");
-  context = canvas.getContext("2d");
+  const shouldRegenerate = !canvas;
+  if (shouldRegenerate) {
+    canvas = document.createElement("canvas");
+    context = canvas.getContext("2d");
+  }
 
   width = w;
   height = h;
@@ -23,20 +26,12 @@ exports.initialize = function (w, h) {
   canvas.height = (height * squareSize).toString();
   canvas.style = "border: 1px solid black;";
 
-  document.body.appendChild(canvas);
+  if (shouldRegenerate) {
+    document.body.appendChild(canvas);
+  }
 
-  let focused;
-
-  document.addEventListener(
-    "mousedown",
-    function (event) {
-      focused = event.target == canvas;
-    },
-    false
-  );
-
-  document.addEventListener("keydown", (ev) => {
-    if (focused) {
+  if (shouldRegenerate) {
+    document.addEventListener("keydown", (ev) => {
       if (ev.key in keys && keys[ev.key] === false) {
         keys[ev.key] = true;
         switch (ev.key) {
@@ -54,16 +49,14 @@ exports.initialize = function (w, h) {
             break;
         }
       }
-    }
-  });
+    });
 
-  document.addEventListener("keyup", (ev) => {
-    if (focused) {
+    document.addEventListener("keyup", (ev) => {
       if (ev.key in keys) {
         keys[ev.key] = false;
       }
-    }
-  });
+    });
+  }
 };
 
 let mapImage;

@@ -2,6 +2,15 @@ const model = require("./model");
 
 var socket;
 
+const resetButton = document.getElementById("reset");
+resetButton.addEventListener("click", () => {
+  socket.send(
+    JSON.stringify({
+      code: "reset",
+    })
+  );
+});
+
 exports.sendMove = function (x, y) {
   let delta = {
     x,

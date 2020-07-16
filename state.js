@@ -1,8 +1,9 @@
 const mazedraw = require("./mazedraw");
 const backtrack = require("./backtrack");
+const randomColor = require("randomcolor");
 
 let positions = {};
-let maze;
+let maze = null;
 const w = 10,
   h = 10;
 
@@ -49,7 +50,6 @@ exports.doCmd = function (cmd, ctx) {
         maze = backtrack.gen(w, h);
       }
 
-      var randomColor = require("randomcolor");
       const color = randomColor();
 
       positions[cmd.username] = {
@@ -66,7 +66,6 @@ exports.doCmd = function (cmd, ctx) {
             map: mazeMap.toString("base64"),
             w,
             h,
-            color,
           })
         );
         ctx.broadcast(
@@ -88,7 +87,7 @@ exports.doCmd = function (cmd, ctx) {
       console.log("moving", cmd.delta, "from", oldPosition, "to", newPosition);
 
       if (validMove(oldPosition, newPosition)) {
-        positions[ctx.username] = newPosition;
+        Object.assign(positions[ctx.username], newPosition);
 
         if (wins(newPosition)) {
           ctx.broadcast(
@@ -107,6 +106,28 @@ exports.doCmd = function (cmd, ctx) {
           position: positions[ctx.username],
         })
       );
+      break;
+    case "reset":
+      console.log("resetting server");
+      const tempMaze = backtrack.gen(w, h);
+      mazedraw.draw(w, h, tempMaze, (mazeMap) => {
+        for (const uname in positions) {
+          Object.assign(positions[uname], {
+            x: maze.startingPoint.col,
+            y: maze.startingPoint.row,
+          });
+        }
+        maze = tempMaze;
+        ctx.broadcast(
+          JSON.stringify({
+            code: "initialize",
+            positions,
+            map: mazeMap.toString("base64"),
+            w,
+            h,
+          })
+        );
+      });
       break;
     default:
       console.log("unhandled code", cmd);
