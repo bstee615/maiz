@@ -35,6 +35,7 @@ exports.connect = function (username) {
         username,
       })
     );
+    resetButton.disabled = false;
   });
   socket.addEventListener("message", (msg) => onMessage(msg, username));
 };
