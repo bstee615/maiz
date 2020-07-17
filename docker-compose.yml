@@ -1,0 +1,27 @@
+version: "3"
+
+services:
+  core:
+    image: benjijang/maiz-server
+    environment:
+      - MAZEDRAW_URL=mazedraw
+      - NODE_ENV=production
+    depends_on:
+      - mazedraw
+    ports:
+      - 3000:80
+    links:
+      - mazedraw
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+  mazedraw:
+    image: benjijang/maiz-mazedraw
+    ports:
+      - 2000:2000
+    environment:
+      - PYTHON_ENV=production
+    build:
+      context: .
+      dockerfile: Dockerfile.mazedraw
