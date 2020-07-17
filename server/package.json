@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "run": "node index.js",
+    "run-prod": "node_modules/.bin/cross-env NODE_ENV=production node index.js",
     "mazedraw": "python -m mazedraw.serve",
     "test": "test"
   },
@@ -16,6 +17,7 @@
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.19.0",
+    "cross-env": "^7.0.2",
     "express": "^4.17.1",
     "uuid": "^8.2.0",
     "ws": "^7.3.1"

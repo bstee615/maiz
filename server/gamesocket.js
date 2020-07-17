@@ -6,8 +6,8 @@ const state = require("./state");
 
 exports.listen = function (app) {
   const wsServer = new WebSocket.Server({
-    server: app.listen(config.port, () =>
-      console.log(`Server listening at http://localhost:${config.port}`)
+    server: app.listen(config.port, config.host, () =>
+      console.log(`Server listening at http://${config.host}:${config.port}`)
     ),
     path: "/play/",
   });

@@ -5,24 +5,37 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Launch MazeDraw service",
+      "name": "mazedraw",
       "type": "python",
       "request": "launch",
       "module": "mazedraw.serve"
     },
     {
+      "name": "server",
       "type": "node",
       "request": "launch",
-      "name": "Launch Program",
       "skipFiles": ["<node_internals>/**"],
-      "program": "${workspaceFolder}\\index.js"
+      "program": "${workspaceFolder}\\server\\index.js"
     },
     {
+      "name": "backtrack",
       "type": "node",
       "request": "launch",
-      "name": "Launch Maze",
       "skipFiles": ["<node_internals>/**"],
-      "program": "${workspaceFolder}\\backtrack.js"
+      "program": "${workspaceFolder}\\server\\backtrack.js"
+    },
+    {
+      "name": "chrome",
+      "request": "launch",
+      "type": "pwa-chrome",
+      "url": "http://localhost:3000",
+      "webRoot": "${workspaceFolder}/ui"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "All",
+      "configurations": ["mazedraw", "server", "chrome"]
     }
   ]
 }
