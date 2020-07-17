@@ -2,8 +2,10 @@ const express = require("express");
 
 const app = express();
 const gamesocket = require("./gamesocket");
+const path = require("path");
 
-const staticUrl = __dirname + "\\..\\ui\\dist";
+const staticUrl = path.join(__dirname, "..", "ui", "dist");
+
 console.log("Serving static files at", staticUrl);
 app.use(express.static(staticUrl));
 
