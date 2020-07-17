@@ -13,4 +13,6 @@ COPY mazeconfig.json .
 
 EXPOSE 80
 
-CMD [ "npm", "run", "run-prod", "--prefix", "./server" ]
+ENV NODE_ENV=production
+
+CMD [ "npm", "run", "serve", "--prefix", "./server" ]
