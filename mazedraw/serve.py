@@ -4,6 +4,7 @@ import select
 import json
 import socket
 import math
+import os
 
 from .maze import draw_maze
 
@@ -88,7 +89,10 @@ def serve():
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.settimeout(1.0)
-        s.bind(("localhost", config["port"]))
+        host = "localhost"
+        if "PYTHON_ENV" in os.environ and os.environ['PYTHON_ENV'] == "production":
+            host = "0.0.0.0"
+        s.bind((host, config["port"]))
         s.listen()
 
         print(f"Serving on http://localhost:{config['port']}")
