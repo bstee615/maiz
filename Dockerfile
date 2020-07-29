@@ -2,12 +2,16 @@ FROM node:12
 
 WORKDIR /usr/src/app
 
-COPY server/ ./server/
+COPY ui/package.json ./ui/package.json
+RUN npm install --prefix ./ui
+
+COPY server/package.json ./server/package.json
 RUN npm install --prefix ./server
 
 COPY ui/ ./ui/
-RUN npm install --prefix ./ui
 RUN npm run build --prefix ./ui/
+
+COPY server/ ./server/
 
 COPY mazeconfig.json .
 

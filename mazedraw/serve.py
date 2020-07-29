@@ -14,8 +14,11 @@ def get_config():
     Read and return the maze configuration
     '''
 
-    with open("mazeconfig.json") as mazeconfig:
-        return json.load(mazeconfig)
+    return {
+        "port": 8001,
+        "cellsize": 10,
+        "showImage": False
+    }
 
 
 def process(message):
