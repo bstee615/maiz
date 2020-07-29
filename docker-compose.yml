@@ -1,0 +1,22 @@
+version: "3"
+
+services:
+  core:
+    image: benjijang/maiz-server
+    depends_on:
+      - mazedraw
+    ports:
+      - 8000:8000
+    links:
+      - mazedraw
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+  mazedraw:
+    image: benjijang/maiz-mazedraw
+    expose:
+      - 8001
+    build:
+      context: mazedraw
+      dockerfile: Dockerfile

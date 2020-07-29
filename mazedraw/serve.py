@@ -93,8 +93,6 @@ def serve():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.settimeout(1.0)
         host = "localhost"
-        if "PYTHON_ENV" in os.environ and os.environ['PYTHON_ENV'] == "production":
-            host = "0.0.0.0"
         s.bind((host, config["port"]))
         s.listen()
 
