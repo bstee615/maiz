@@ -16,7 +16,7 @@ services:
   mazedraw:
     image: benjijang/maiz-mazedraw
     expose:
-      - 80
+      - 3000
     build:
       context: mazedraw
       dockerfile: Dockerfile

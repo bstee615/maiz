@@ -76,7 +76,7 @@ def serve():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.settimeout(1.0)
         host = "0.0.0.0"
-        port = 80
+        port = 3000
         s.bind((host, port))
         s.listen()
 
