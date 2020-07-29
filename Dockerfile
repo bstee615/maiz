@@ -11,6 +11,4 @@ RUN npm run build --prefix ./ui/
 
 COPY mazeconfig.json .
 
-EXPOSE 80
-
 CMD [ "npm", "run", "serve", "--prefix", "./server" ]
