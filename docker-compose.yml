@@ -20,3 +20,4 @@ services:
     build:
       context: mazedraw
       dockerfile: Dockerfile
+    stop_signal: SIGINT
