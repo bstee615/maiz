@@ -136,7 +136,7 @@ if (require.main === module) {
   const maze = generateMaze(w, h);
   // console.log(maze);
   // console.log(start);
-  mazedraw = require("./mazedraw");
+  mazedraw = require("../micro/mazedraw");
   mazedraw.draw(w, h, maze, (d) =>
     console.log(`Got a reply of ${d.length} bytes`)
   );

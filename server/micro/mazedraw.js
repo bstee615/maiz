@@ -1,7 +1,7 @@
 // Interacts with the mazedraw service
 
 const net = require("net");
-const config = require("./config");
+const config = require("../config");
 
 exports.draw = function (width, height, maze, cellSize, cb) {
   const { walls, startingPoint, ends } = maze;

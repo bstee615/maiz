@@ -1,11 +1,13 @@
 const express = require("express");
-
-const app = express();
-const gamesocket = require("./gamesocket");
+const WebSocket = require("ws");
 const path = require("path");
 
-const staticUrl = path.join(__dirname, "..", "ui", "dist");
+const socket = require("./socket");
+const config = require("./config");
 
+const app = express();
+
+const staticUrl = path.join(__dirname, "..", "ui", "dist");
 console.log("Serving static files at", staticUrl);
 app.use(express.static(staticUrl));
 
@@ -15,4 +17,11 @@ app.use(
   })
 );
 
-gamesocket.listen(app);
+const wsServer = new WebSocket.Server({
+  server: app.listen(config.port, config.host, () =>
+    console.log(`Server listening at http://${config.host}:${config.port}`)
+  ),
+  path: "/play/",
+});
+
+wsServer.on("connection", socket.onConnection);

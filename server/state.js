@@ -1,5 +1,5 @@
-const mazedraw = require("./mazedraw");
-const backtrack = require("./backtrack");
+const mazedraw = require("./micro/mazedraw");
+const backtrack = require("./mazegen/backtrack");
 const randomColor = require("randomcolor");
 
 let positions = {};

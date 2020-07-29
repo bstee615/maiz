@@ -1,19 +1,6 @@
 const uuid = require("uuid");
-const WebSocket = require("ws");
 
-const config = require("./config");
 const state = require("./state");
-
-exports.listen = function (app) {
-  const wsServer = new WebSocket.Server({
-    server: app.listen(config.port, config.host, () =>
-      console.log(`Server listening at http://${config.host}:${config.port}`)
-    ),
-    path: "/play/",
-  });
-
-  wsServer.on("connection", onConnection);
-};
 
 let clients = {};
 
