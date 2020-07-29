@@ -4,12 +4,12 @@ const state = require("./state");
 
 let clients = {};
 
-function onConnection(socket) {
+exports.onConnection = function (socket) {
   socket.id = uuid.v4();
   console.log(`registered client`, socket.id);
   clients[socket.id] = socket;
   socket.on("message", (msgJson) => onMessage(msgJson, socket.id));
-}
+};
 
 class NetCtx {
   constructor(client) {

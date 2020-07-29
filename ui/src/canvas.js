@@ -81,10 +81,6 @@ exports.setPositions = function (positions) {
   positionsByPlayer = positions;
 };
 
-let color;
-
-exports.setColor = (c) => (color = c);
-
 exports.redraw = function () {
   context.clearRect(0, 0, canvas.width, canvas.height);
   context.drawImage(mapImage, 0, 0, canvas.width, canvas.height);
