@@ -4,7 +4,14 @@ import io
 import math
 
 
-def draw_maze(walls, start, ends, w, h, size, show=False):
+def draw_maze(message, show=True):
+    walls = message["walls"]
+    start = message["startingPoint"]
+    ends = message["ends"]
+    w = message["width"]
+    h = message["height"]
+    size = message["cellSize"]
+
     img = Image.new("RGB", (w*size, h*size))
     draw = ImageDraw.Draw(img)
 

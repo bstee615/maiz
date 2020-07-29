@@ -9,28 +9,12 @@ import os
 from .maze import draw_maze
 
 
-def get_config():
-    '''
-    Read and return the maze configuration
-    '''
-
-    return {
-        "port": 8001,
-        "cellsize": 10,
-        "showImage": False
-    }
-
-
 def process(message):
     '''
     Process message and return the results
     '''
 
-    config = get_config()
-    size = config["cellsize"]
-    show_image = config["showImage"]
-
-    return draw_maze(message["walls"], message["startingPoint"], message["ends"], message["width"], message["height"], size, show=show_image)
+    return draw_maze(message, False)
 
 
 def recv_all(conn):
@@ -88,15 +72,15 @@ def serve():
     '''
     Serve maze generation requests on loop
     '''
-    config = get_config()
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.settimeout(1.0)
-        host = "localhost"
-        s.bind((host, config["port"]))
+        host = "0.0.0.0"
+        port = 80
+        s.bind((host, port))
         s.listen()
 
-        print(f"Serving on http://localhost:{config['port']}")
+        print(f"Serving on http://{host}:{80}")
         print("Press Ctrl+C to exit...")
 
         run_safely(s)

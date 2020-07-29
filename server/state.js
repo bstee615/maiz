@@ -5,7 +5,8 @@ const randomColor = require("randomcolor");
 let positions = {};
 let maze = null;
 const w = 10,
-  h = 10;
+  h = 10,
+  cellSize = 10;
 
 function inBounds(pos) {
   return pos.x >= 0 && pos.x < w && pos.y >= 0 && pos.y < h;
@@ -58,7 +59,7 @@ exports.doCmd = function (cmd, ctx) {
         color,
       };
 
-      mazedraw.draw(w, h, maze, (mazeMap) => {
+      mazedraw.draw(w, h, maze, cellSize, (mazeMap) => {
         ctx.send(
           JSON.stringify({
             code: "initialize",
@@ -110,7 +111,7 @@ exports.doCmd = function (cmd, ctx) {
     case "reset":
       console.log("resetting server");
       const tempMaze = backtrack.gen(w, h);
-      mazedraw.draw(w, h, tempMaze, (mazeMap) => {
+      mazedraw.draw(w, h, tempMaze, cellSize, (mazeMap) => {
         for (const uname in positions) {
           Object.assign(positions[uname], {
             x: maze.startingPoint.col,

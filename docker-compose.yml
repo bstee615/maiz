@@ -6,7 +6,7 @@ services:
     depends_on:
       - mazedraw
     ports:
-      - 8000:8000
+      - 8000:80
     links:
       - mazedraw
     build:
@@ -16,7 +16,7 @@ services:
   mazedraw:
     image: benjijang/maiz-mazedraw
     expose:
-      - 8001
+      - 80
     build:
       context: mazedraw
       dockerfile: Dockerfile

@@ -1,6 +1,6 @@
 exports.host = "0.0.0.0";
-exports.port = 8000;
+exports.port = 80;
 exports.mazedraw = {
-  host: "localhost",
-  port: 8001,
+  host: "mazedraw",
+  port: 80,
 };
