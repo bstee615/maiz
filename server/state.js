@@ -49,7 +49,7 @@ function setMaze(newMaze) {
 }
 
 function createPlayer(username, state) {
-  log.info("createPosition begin", { username, state });
+  log.info("createPlayer", { username, state });
 
   if (players[username]) {
     log.error("player already exists", {
@@ -61,8 +61,6 @@ function createPlayer(username, state) {
   }
 
   players[username] = state;
-
-  log.info("createPosition end");
 }
 
 function setPlayerPosition(username, position) {
@@ -82,7 +80,14 @@ function setPlayerPosition(username, position) {
   log.debug("setPlayerPosition end");
 }
 
-function initializePlayer(ctx, username) {
+function reply(type, data) {
+  return {
+    type,
+    message: JSON.stringify(data),
+  };
+}
+
+exports.initializePlayer = function (username) {
   log.info("initializePlayer", { username });
 
   if (!maze) {
@@ -95,31 +100,25 @@ function initializePlayer(ctx, username) {
     color: randomColor(),
   });
 
-  mazedraw.draw(w, h, maze, cellSize, (mazeMap) => {
-    try {
-      ctx.send(
-        JSON.stringify({
-          code: "initialize",
-          players,
-          map: mazeMap.toString("base64"),
-          w,
-          h,
-        })
-      );
-      ctx.broadcast(
-        JSON.stringify({
-          code: "join",
-          username: username,
-          player: players[username],
-        })
-      );
-    } catch (ex) {
-      log.error("initializePlayer error", { ex });
-    }
+  return mazedraw.draw(w, h, maze, cellSize).then((mazeMap) => {
+    return [
+      reply("send", {
+        code: "initialize",
+        players,
+        map: mazeMap.toString("base64"),
+        w,
+        h,
+      }),
+      reply("broadcast", {
+        code: "join",
+        username: username,
+        player: players[username],
+      }),
+    ];
   });
-}
+};
 
-function movePlayer(ctx, username, delta) {
+exports.movePlayer = function (username, delta) {
   log.debug("movePlayer", { username, delta });
 
   const from = players[username];
@@ -130,12 +129,14 @@ function movePlayer(ctx, username, delta) {
 
   log.debug("calculated positions", { username, from, to });
 
+  let replies = [];
+
   if (validMove(from, to)) {
     setPlayerPosition(username, to);
 
     if (wins(to)) {
-      ctx.broadcast(
-        JSON.stringify({
+      replies.push(
+        reply("broadcast", {
           code: "win",
           username: username,
         })
@@ -143,48 +144,42 @@ function movePlayer(ctx, username, delta) {
     }
   }
 
-  ctx.broadcast(
-    JSON.stringify({
+  replies.push(
+    reply("broadcast", {
       code: "update",
       username: username,
       player: players[username],
     })
   );
-}
 
-function resetMap(ctx) {
+  return Promise.resolve(replies);
+};
+
+exports.resetMap = function () {
   log.info("resetMap");
 
   const tempMaze = backtrack.gen(w, h);
 
-  mazedraw.draw(w, h, tempMaze, cellSize, (mazeMap) => {
+  return mazedraw.draw(w, h, tempMaze, cellSize).then((mazeMap) => {
     log.info("resetMap callback", { w, h, cellSize });
 
-    try {
-      for (const uname in players) {
-        setPlayerPosition(uname, {
-          x: maze.startingPoint.col,
-          y: maze.startingPoint.row,
-        });
-      }
-
-      setMaze(tempMaze);
-
-      ctx.broadcast(
-        JSON.stringify({
-          code: "initialize",
-          players,
-          map: mazeMap.toString("base64"),
-          w,
-          h,
-        })
-      );
-    } catch (ex) {
-      log.error("resetMap error", { ex });
+    for (const uname in players) {
+      setPlayerPosition(uname, {
+        x: maze.startingPoint.col,
+        y: maze.startingPoint.row,
+      });
     }
-  });
-}
 
-exports.initializePlayer = initializePlayer;
-exports.movePlayer = movePlayer;
-exports.resetMap = resetMap;
+    setMaze(tempMaze);
+
+    return [
+      reply("broadcast", {
+        code: "initialize",
+        players,
+        map: mazeMap.toString("base64"),
+        w,
+        h,
+      }),
+    ];
+  });
+};

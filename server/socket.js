@@ -45,6 +45,19 @@ class NetContext {
 
     this.client.send(msg);
   }
+
+  handleReply(replies) {
+    for (const reply of replies) {
+      switch (reply.type) {
+        case "send":
+          this.send(reply.message);
+          break;
+        case "broadcast":
+          this.broadcast(reply.message);
+          break;
+      }
+    }
+  }
 }
 
 function doCommand(command, client) {
@@ -52,21 +65,29 @@ function doCommand(command, client) {
 
   log.debug("doCommand", { command, username: client.username });
 
+  let promise;
+
   switch (command.code) {
     case "initialize":
       client.username = command.username;
-      state.initializePlayer(ctx, client.username);
+      promise = state.initializePlayer(client.username);
       break;
     case "move":
-      state.movePlayer(ctx, client.username, command.delta);
+      promise = state.movePlayer(client.username, command.delta);
       break;
     case "reset":
-      state.resetMap(ctx);
+      promise = state.resetMap();
       break;
     default:
-      log.warn("unhandled command", command);
+      promise = Promise.reject(new Error(`unhandled command ${command}`));
       break;
   }
+
+  promise
+    .then((reply) => {
+      ctx.handleReply(reply);
+    })
+    .catch((ex) => log.error("doCommand error", { ex }));
 }
 
 function onMessage(message, id) {
