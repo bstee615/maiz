@@ -72,6 +72,11 @@ function doCommand(command, client) {
 
   switch (command.code) {
     case "initialize":
+      if (client.username) {
+        throw new Error(
+          `Cannot reinitialize username to "${command.username}" for client "${client.username}".`
+        );
+      }
       client.username = command.username;
       promise = state.initializePlayer(command.username);
       break;
