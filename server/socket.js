@@ -7,40 +7,6 @@ const logging = require("./log");
 const log = logging.getLogger(module.filename);
 
 let clients = {};
-exports.clients = clients;
-
-class NetContext {
-  constructor(client) {
-    this.client = client;
-    this.log = logging.getLogger(this.constructor.name);
-
-    this.log.debug("constructor", { username: this.username });
-  }
-
-  broadcast(msg) {
-    this.log.debug("broadcast", { msg, clients: Object.keys(clients) });
-
-    for (const id in clients) {
-      clients[id].send(msg);
-    }
-  }
-
-  send(msg) {
-    this.log.debug("send", { msg, username: this.username });
-
-    this.client.send(msg);
-  }
-
-  get username() {
-    return this.client.username;
-  }
-
-  setUsername(username) {
-    this.log.debug("setUsername", { username: this.username, username });
-
-    this.client.username = username;
-  }
-}
 
 function registerClient(socket) {
   socket.id = uuid.v4();
@@ -58,13 +24,57 @@ exports.onConnection = function (socket) {
   }
 };
 
-function onMessage(msgJson, id) {
+class NetContext {
+  constructor(client) {
+    this.client = client;
+
+    this.log = logging.getLogger(this.constructor.name);
+    this.log.debug("constructor", { username: this.username });
+  }
+
+  broadcast(msg) {
+    this.log.debug("broadcast", { msg, clients: Object.keys(clients) });
+
+    for (const id in clients) {
+      clients[id].send(msg);
+    }
+  }
+
+  send(msg) {
+    this.log.debug("send", { msg, username: this.username });
+
+    this.client.send(msg);
+  }
+}
+
+function doCommand(command, client) {
+  const ctx = new NetContext(client);
+
+  log.debug("doCommand", { command, username: client.username });
+
+  switch (command.code) {
+    case "initialize":
+      client.username = command.username;
+      state.initializePlayer(ctx, client.username);
+      break;
+    case "move":
+      state.movePlayer(ctx, client.username, command.delta);
+      break;
+    case "reset":
+      state.resetMap(ctx);
+      break;
+    default:
+      log.warn("unhandled command", command);
+      break;
+  }
+}
+
+function onMessage(message, id) {
   try {
+    const command = JSON.parse(message);
     const client = clients[id];
-    const cmd = JSON.parse(msgJson);
-    const netCtx = new NetContext(client);
-    state.doCmd(cmd, netCtx);
+    doCommand(command, client);
   } catch (ex) {
-    log.error("onMessage exception", { ex, ...arguments });
+    log.error("onMessage exception", { ex, message, id });
   }
 }
