@@ -63,14 +63,17 @@ class NetContext {
 function doCommand(command, client) {
   const ctx = new NetContext(client);
 
-  log.debug("doCommand", { command, username: client.username });
+  log.debug("doCommand", {
+    command,
+    username: client.username || command.username,
+  });
 
   let promise;
 
   switch (command.code) {
     case "initialize":
       client.username = command.username;
-      promise = state.initializePlayer(client.username);
+      promise = state.initializePlayer(command.username);
       break;
     case "move":
       promise = state.movePlayer(client.username, command.delta);
