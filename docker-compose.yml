@@ -3,6 +3,8 @@ version: "3"
 services:
   core:
     image: benjijang/maiz-server
+    env:
+      - NODE_ENV: production
     depends_on:
       - mazedraw
     ports:
@@ -15,6 +17,8 @@ services:
 
   mazedraw:
     image: benjijang/maiz-mazedraw
+    env:
+      - PYTHON_ENV: production
     expose:
       - 3000
     build:

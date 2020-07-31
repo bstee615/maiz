@@ -72,15 +72,19 @@ def serve():
     '''
     Serve maze generation requests on loop
     '''
+    if 'PYTHON_ENV' in os.environ and os.environ['PYTHON_ENV'] == 'prod':
+        host = "0.0.0.0"
+        port = 80
+    else:
+        host = "127.0.0.1"
+        port = 3000
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.settimeout(1.0)
-        host = "0.0.0.0"
-        port = 3000
         s.bind((host, port))
         s.listen()
 
-        print(f"Serving on http://{host}:{80}")
+        print(f"Serving on http://{host}:{port}")
         print("Press Ctrl+C to exit...")
 
         run_safely(s)
