@@ -20,11 +20,11 @@ app.use(
   })
 );
 
-const wsServer = new WebSocket.Server({
+const ws = new WebSocket.Server({
   server: app.listen(config.port, config.host, () =>
     log.info(`Server listening at http://${config.host}:${config.port}`)
   ),
   path: "/play/",
 });
 
-wsServer.on("connection", socket.onConnection);
+ws.on("connection", socket.onConnection);

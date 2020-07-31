@@ -4,7 +4,7 @@ const randomColor = require("randomcolor");
 
 const log = require("./log").getLogger(module.filename);
 
-let positions = {};
+let players = {};
 let maze = null;
 const w = 10,
   h = 10,
@@ -43,29 +43,62 @@ function wins(playerPos) {
   return false;
 }
 
+function setMaze(newMaze) {
+  log.info("setMaze", { old: maze, new: newMaze });
+  maze = newMaze;
+}
+
+function createPlayer(username, position) {
+  log.info("createPosition", arguments);
+
+  if (players[username]) {
+    log.error("player already exists", {
+      username,
+      old: players[username],
+      new: position,
+    });
+    return;
+  }
+
+  players[username] = position;
+}
+
+function setPlayerPosition(username, position) {
+  log.info("mergePosition", arguments);
+
+  if (!players[username]) {
+    log.error("player does not exist", {
+      username,
+      position,
+    });
+    return;
+  }
+
+  Object.assign(players[username], position);
+}
+
 exports.doCmd = function (cmd, ctx) {
+  log.debug("doCmd", { code: cmd.code, cmd, username: ctx.username });
+
   switch (cmd.code) {
     case "initialize":
       ctx.setUsername(cmd.username);
-      log.info("initialize", cmd.username);
 
       if (!maze) {
-        maze = backtrack.gen(w, h);
+        setMaze(backtrack.gen(w, h));
       }
 
-      const color = randomColor();
-
-      positions[cmd.username] = {
+      createPlayer(ctx.username, {
         x: maze.startingPoint.col,
         y: maze.startingPoint.row,
-        color,
-      };
+        color: randomColor(),
+      });
 
       mazedraw.draw(w, h, maze, cellSize, (mazeMap) => {
         ctx.send(
           JSON.stringify({
             code: "initialize",
-            positions,
+            positions: players,
             map: mazeMap.toString("base64"),
             w,
             h,
@@ -75,24 +108,24 @@ exports.doCmd = function (cmd, ctx) {
           JSON.stringify({
             code: "join",
             username: ctx.username,
-            position: positions[ctx.username],
+            position: players[ctx.username],
           })
         );
       });
       break;
     case "move":
-      const oldPosition = positions[ctx.username];
-      const newPosition = {
-        x: oldPosition.x + cmd.delta.x,
-        y: oldPosition.y + cmd.delta.y,
+      const from = players[ctx.username];
+      const to = {
+        x: from.x + cmd.delta.x,
+        y: from.y + cmd.delta.y,
       };
 
-      log.info("moving", cmd.delta, "from", oldPosition, "to", newPosition);
+      log.debug("moving", { delta: cmd.delta, from, to });
 
-      if (validMove(oldPosition, newPosition)) {
-        Object.assign(positions[ctx.username], newPosition);
+      if (validMove(from, to)) {
+        setPlayerPosition(ctx.username, to);
 
-        if (wins(newPosition)) {
+        if (wins(to)) {
           ctx.broadcast(
             JSON.stringify({
               code: "win",
@@ -106,25 +139,29 @@ exports.doCmd = function (cmd, ctx) {
         JSON.stringify({
           code: "update",
           username: ctx.username,
-          position: positions[ctx.username],
+          position: players[ctx.username],
         })
       );
       break;
     case "reset":
-      log.info("resetting server");
       const tempMaze = backtrack.gen(w, h);
+
       mazedraw.draw(w, h, tempMaze, cellSize, (mazeMap) => {
-        for (const uname in positions) {
-          Object.assign(positions[uname], {
+        log.info("resetting the map", w, h, cellSize);
+
+        for (const uname in players) {
+          setPlayerPosition(uname, {
             x: maze.startingPoint.col,
             y: maze.startingPoint.row,
           });
         }
-        maze = tempMaze;
+
+        setMaze(tempMaze);
+
         ctx.broadcast(
           JSON.stringify({
             code: "initialize",
-            positions,
+            positions: players,
             map: mazeMap.toString("base64"),
             w,
             h,
@@ -133,7 +170,7 @@ exports.doCmd = function (cmd, ctx) {
       });
       break;
     default:
-      log.info("unhandled code", cmd);
+      log.warn("unhandled cmd", cmd);
       break;
   }
 };

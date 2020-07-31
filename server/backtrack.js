@@ -106,6 +106,8 @@ function search(grid, walls, w, h, row, col, length = 0) {
 
 // Backtracking DFS repeatedly until all cells have been visited
 function generateMaze(w, h) {
+  log.debug("generateMaze begin", { w, h });
+
   let grid = initGrid(w, h, () => false);
   let walls = initWalls(w, h);
 
@@ -114,20 +116,25 @@ function generateMaze(w, h) {
     col: Math.floor(w / 2),
   };
   const ends = search(grid, walls, w, h, middle.row, middle.col);
-  log.info(ends);
   const threshold = 20;
-  log.info("threshold", threshold);
+
   const choppedEnds = ends.filter((e) => e.length > threshold);
   const randomChoppedEnds = choppedEnds
     .sort(() => 0.5 - Math.random())
     .slice(0, Math.min(3, ends.length));
-  log.info("top");
 
-  return {
+  const result = {
     walls,
     startingPoint: middle,
     ends: randomChoppedEnds,
   };
+
+  log.info("generateMaze end", {
+    startingPoint: middle,
+    ends: randomChoppedEnds,
+  });
+
+  return result;
 }
 
 exports.gen = generateMaze;
