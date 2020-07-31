@@ -6,7 +6,7 @@ exports.update = function (data, username) {
   console.log("data", data);
   switch (data.code) {
     case "initialize":
-      players = data.positions;
+      players = data.players;
       const map = data.map;
       canvas.setPositions(players);
       canvas.initialize(data.w, data.h);
@@ -19,13 +19,13 @@ exports.update = function (data, username) {
       if (username === data.username) {
         break;
       }
-      console.log("join", data.username, data.position);
-      players[data.username] = data.position;
+      console.log("join", data.username, data.player);
+      players[data.username] = data.player;
       canvas.redraw();
       break;
     case "update":
-      console.log("update", data.username, data.position);
-      Object.assign(players[data.username], data.position);
+      console.log("update", data.username, data.player);
+      Object.assign(players[data.username], data.player);
       canvas.redraw();
       break;
     case "win":

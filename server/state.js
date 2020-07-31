@@ -48,23 +48,23 @@ function setMaze(newMaze) {
   maze = newMaze;
 }
 
-function createPlayer(username, position) {
-  log.info("createPosition", arguments);
+function createPlayer(username, state) {
+  log.info("createPosition", { username, state });
 
   if (players[username]) {
     log.error("player already exists", {
       username,
       old: players[username],
-      new: position,
+      new: state,
     });
     return;
   }
 
-  players[username] = position;
+  players[username] = state;
 }
 
 function setPlayerPosition(username, position) {
-  log.info("mergePosition", arguments);
+  log.info("mergePosition", { username, position });
 
   if (!players[username]) {
     log.error("player does not exist", {
@@ -98,7 +98,7 @@ exports.doCmd = function (cmd, ctx) {
         ctx.send(
           JSON.stringify({
             code: "initialize",
-            positions: players,
+            players,
             map: mazeMap.toString("base64"),
             w,
             h,
@@ -108,7 +108,7 @@ exports.doCmd = function (cmd, ctx) {
           JSON.stringify({
             code: "join",
             username: ctx.username,
-            position: players[ctx.username],
+            player: players[ctx.username],
           })
         );
       });
@@ -139,7 +139,7 @@ exports.doCmd = function (cmd, ctx) {
         JSON.stringify({
           code: "update",
           username: ctx.username,
-          position: players[ctx.username],
+          player: players[ctx.username],
         })
       );
       break;
@@ -161,7 +161,7 @@ exports.doCmd = function (cmd, ctx) {
         ctx.broadcast(
           JSON.stringify({
             code: "initialize",
-            positions: players,
+            players,
             map: mazeMap.toString("base64"),
             w,
             h,

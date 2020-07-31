@@ -51,12 +51,20 @@ function registerClient(socket) {
 }
 
 exports.onConnection = function (socket) {
-  registerClient(socket);
+  try {
+    registerClient(socket);
+  } catch (ex) {
+    log.error("onConnection exception", { ex });
+  }
 };
 
 function onMessage(msgJson, id) {
-  const client = clients[id];
-  const cmd = JSON.parse(msgJson);
-  const netCtx = new NetContext(client);
-  state.doCmd(cmd, netCtx);
+  try {
+    const client = clients[id];
+    const cmd = JSON.parse(msgJson);
+    const netCtx = new NetContext(client);
+    state.doCmd(cmd, netCtx);
+  } catch (ex) {
+    log.error("onMessage exception", { ex, ...arguments });
+  }
 }
