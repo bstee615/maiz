@@ -2,11 +2,13 @@ const uuid = require("uuid");
 
 const state = require("./state");
 
+const log = require("./log").getLogger(module.filename);
+
 let clients = {};
 
 exports.onConnection = function (socket) {
   socket.id = uuid.v4();
-  console.log(`registered client`, socket.id);
+  log.info(`registered client`, socket.id);
   clients[socket.id] = socket;
   socket.on("message", (msgJson) => onMessage(msgJson, socket.id));
 };

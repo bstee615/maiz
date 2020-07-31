@@ -3,6 +3,8 @@
 const net = require("net");
 const config = require("./config");
 
+const log = require("./log").getLogger(module.filename);
+
 exports.draw = function (width, height, maze, cellSize, cb) {
   const { walls, startingPoint, ends } = maze;
 
@@ -11,7 +13,7 @@ exports.draw = function (width, height, maze, cellSize, cb) {
     const host = config.mazedraw.host,
       port = config.mazedraw.port;
     client.connect(port, host);
-    console.log(`Sending maze request to ${host}:${port}`);
+    log.info(`Sending maze request to ${host}:${port}`);
     client.write(
       JSON.stringify({ width, height, walls, startingPoint, ends, cellSize })
     );
@@ -21,16 +23,13 @@ exports.draw = function (width, height, maze, cellSize, cb) {
       client.destroy();
     });
     client.on("error", function (ex) {
-      console.error("Could not connect with mazedraw service", ex);
+      log.error("Could not connect with mazedraw service", ex);
       cb(null);
       client.destroy();
     });
 
     client.end();
   } catch (e) {
-    console.error(
-      "Encountered exception when connecting with mazedraw service",
-      e
-    );
+    log.error("Encountered exception when connecting with mazedraw service", e);
   }
 };

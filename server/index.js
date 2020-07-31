@@ -7,8 +7,11 @@ const config = require("./config");
 
 const app = express();
 
+const logging = require("./log");
+const log = logging.getLogger(module.filename);
+
 const staticUrl = path.join(__dirname, "..", "ui", "dist");
-console.log("Serving static files at", staticUrl);
+log.info("Serving static files at", staticUrl);
 app.use(express.static(staticUrl));
 
 app.use(
@@ -19,7 +22,7 @@ app.use(
 
 const wsServer = new WebSocket.Server({
   server: app.listen(config.port, config.host, () =>
-    console.log(`Server listening at http://${config.host}:${config.port}`)
+    log.info(`Server listening at http://${config.host}:${config.port}`)
   ),
   path: "/play/",
 });

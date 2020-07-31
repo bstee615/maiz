@@ -1,6 +1,8 @@
-const mazedraw = require("./micro/mazedraw");
-const backtrack = require("./mazegen/backtrack");
+const mazedraw = require("./mazedraw");
+const backtrack = require("./backtrack");
 const randomColor = require("randomcolor");
+
+const log = require("./log").getLogger(module.filename);
 
 let positions = {};
 let maze = null;
@@ -45,7 +47,7 @@ exports.doCmd = function (cmd, ctx) {
   switch (cmd.code) {
     case "initialize":
       ctx.setUsername(cmd.username);
-      console.log("initialize", cmd.username);
+      log.info("initialize", cmd.username);
 
       if (!maze) {
         maze = backtrack.gen(w, h);
@@ -85,7 +87,7 @@ exports.doCmd = function (cmd, ctx) {
         y: oldPosition.y + cmd.delta.y,
       };
 
-      console.log("moving", cmd.delta, "from", oldPosition, "to", newPosition);
+      log.info("moving", cmd.delta, "from", oldPosition, "to", newPosition);
 
       if (validMove(oldPosition, newPosition)) {
         Object.assign(positions[ctx.username], newPosition);
@@ -109,7 +111,7 @@ exports.doCmd = function (cmd, ctx) {
       );
       break;
     case "reset":
-      console.log("resetting server");
+      log.info("resetting server");
       const tempMaze = backtrack.gen(w, h);
       mazedraw.draw(w, h, tempMaze, cellSize, (mazeMap) => {
         for (const uname in positions) {
@@ -131,7 +133,7 @@ exports.doCmd = function (cmd, ctx) {
       });
       break;
     default:
-      console.log("unhandled code", cmd);
+      log.info("unhandled code", cmd);
       break;
   }
 };

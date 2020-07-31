@@ -1,6 +1,10 @@
 const bunyan = require("bunyan");
 const process = require("process");
 
+const PrettyStream = require("bunyan-prettystream");
+const consoleStream = new PrettyStream();
+consoleStream.pipe(process.stdout);
+
 function getLogger(name, level = "debug") {
   return bunyan.createLogger({
     name,
@@ -8,15 +12,14 @@ function getLogger(name, level = "debug") {
     streams: [
       {
         level: level,
-        stream: process.stdout,
+        stream: consoleStream,
+        formatter: "pretty",
       },
     ],
   });
 }
 
-exports = {
-  getLogger,
-};
+exports.getLogger = getLogger;
 
 if (require.main === module) {
   const log = getLogger("log");

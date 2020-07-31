@@ -1,3 +1,5 @@
+const log = require("./log").getLogger(module.filename);
+
 function vector(row, col) {
   return {
     row,
@@ -112,14 +114,14 @@ function generateMaze(w, h) {
     col: Math.floor(w / 2),
   };
   const ends = search(grid, walls, w, h, middle.row, middle.col);
-  console.log(ends);
+  log.info(ends);
   const threshold = 20;
-  console.log("threshold", threshold);
+  log.info("threshold", threshold);
   const choppedEnds = ends.filter((e) => e.length > threshold);
   const randomChoppedEnds = choppedEnds
     .sort(() => 0.5 - Math.random())
     .slice(0, Math.min(3, ends.length));
-  console.log("top");
+  log.info("top");
 
   return {
     walls,
@@ -134,10 +136,10 @@ if (require.main === module) {
   const w = 10,
     h = 10;
   const maze = generateMaze(w, h);
-  // console.log(maze);
-  // console.log(start);
+  // log.info(maze);
+  // log.info(start);
   mazedraw = require("../micro/mazedraw");
   mazedraw.draw(w, h, maze, (d) =>
-    console.log(`Got a reply of ${d.length} bytes`)
+    log.info(`Got a reply of ${d.length} bytes`)
   );
 }

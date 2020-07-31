@@ -15,14 +15,16 @@
       "type": "node",
       "request": "launch",
       "skipFiles": ["<node_internals>/**"],
-      "program": "${workspaceFolder}\\server\\index.js"
+      "program": "${workspaceFolder}\\server\\index.js",
+      "outputCapture": "std"
     },
     {
       "name": "backtrack",
       "type": "node",
       "request": "launch",
       "skipFiles": ["<node_internals>/**"],
-      "program": "${workspaceFolder}\\server\\backtrack.js"
+      "program": "${workspaceFolder}\\server\\backtrack.js",
+      "outputCapture": "std"
     },
     {
       "name": "chrome",
