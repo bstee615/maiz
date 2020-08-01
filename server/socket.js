@@ -2,9 +2,8 @@ const uuid = require("uuid");
 
 const state = require("./state");
 
-const logging = require("./log");
-
-const log = logging.getLogger(module.filename);
+const { getLogger } = require("./log");
+const log = getLogger(module.filename);
 
 let clients = {};
 
@@ -48,12 +47,13 @@ class NetContext {
 
   handleReply(replies) {
     for (const reply of replies) {
+      const message = JSON.stringify(reply.data);
       switch (reply.type) {
         case "send":
-          this.send(reply.message);
+          this.send(message);
           break;
         case "broadcast":
-          this.broadcast(reply.message);
+          this.broadcast(message);
           break;
       }
     }

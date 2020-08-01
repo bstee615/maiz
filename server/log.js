@@ -18,8 +18,24 @@ function getLogger(name, level = "debug") {
     ],
   });
 }
-
 exports.getLogger = getLogger;
+
+function getTestLogger(level = "fatal") {
+  return function () {
+    return bunyan.createLogger({
+      name: "testLogger",
+      level: level,
+      streams: [
+        {
+          level: level,
+          stream: consoleStream,
+          formatter: "pretty",
+        },
+      ],
+    });
+  };
+}
+exports.getTestLogger = getTestLogger;
 
 if (require.main === module) {
   const log = getLogger("log");

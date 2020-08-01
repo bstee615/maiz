@@ -3,7 +3,8 @@
 const net = require("net");
 const config = require("./config");
 
-const log = require("./log").getLogger(module.filename);
+const { getLogger } = require("./log");
+const log = getLogger(module.filename);
 
 exports.draw = function (width, height, maze, cellSize) {
   const { walls, startingPoint, ends } = maze;

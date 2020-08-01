@@ -2,7 +2,8 @@ const mazedraw = require("./mazedraw");
 const backtrack = require("./backtrack");
 const randomColor = require("randomcolor");
 
-const log = require("./log").getLogger(module.filename);
+const { getLogger } = require("./log");
+const log = getLogger(module.filename);
 
 let players = {};
 let maze = null;
@@ -64,26 +65,26 @@ function createPlayer(username, state) {
 }
 
 function setPlayerPosition(username, position) {
-  log.debug("setPlayerPosition begin", { username, position });
+  log.debug("setPlayerPosition", { username, position });
 
   if (!players[username]) {
-    log.error("setPlayerPosition error", {
-      reason: "player does not exist",
-      username,
-      position,
-    });
-    return;
+    throw new Error(
+      "setPlayerPosition error" +
+        JSON.stringify({
+          reason: "player does not exist",
+          username,
+          position,
+        })
+    );
   }
 
   Object.assign(players[username], position);
-
-  log.debug("setPlayerPosition end");
 }
 
 function reply(type, data) {
   return {
     type,
-    message: JSON.stringify(data),
+    data,
   };
 }
 
@@ -134,6 +135,14 @@ exports.movePlayer = function (username, delta) {
   if (validMove(from, to)) {
     setPlayerPosition(username, to);
 
+    replies.push(
+      reply("broadcast", {
+        code: "update",
+        username: username,
+        player: players[username],
+      })
+    );
+
     if (wins(to)) {
       replies.push(
         reply("broadcast", {
@@ -143,14 +152,6 @@ exports.movePlayer = function (username, delta) {
       );
     }
   }
-
-  replies.push(
-    reply("broadcast", {
-      code: "update",
-      username: username,
-      player: players[username],
-    })
-  );
 
   return Promise.resolve(replies);
 };
