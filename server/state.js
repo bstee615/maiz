@@ -1,186 +1,145 @@
 const mazedraw = require("./mazedraw");
 const backtrack = require("./backtrack");
 const randomColor = require("randomcolor");
+const assert = require("assert");
 
 const { getLogger } = require("./log");
+const { Walls } = require("./Walls");
 const log = getLogger(module.filename);
 
-let players = {};
-let maze = null;
 const w = 10,
   h = 10,
   cellSize = 10;
 
-function inBounds(pos) {
-  return pos.x >= 0 && pos.x < w && pos.y >= 0 && pos.y < h;
-}
-
-function wallBlocks(oldPos, newPos) {
-  for (const other of maze.walls[oldPos.y][oldPos.x]) {
-    if (other.col === newPos.x && other.row === newPos.y) {
-      return true;
-    }
-  }
-}
-
-function validMove(oldPos, newPos) {
-  if (!inBounds(newPos)) {
-    return false;
-  }
-
-  if (wallBlocks(oldPos, newPos)) {
-    return false;
-  }
-
-  return true;
-}
-
-function wins(playerPos) {
-  for (const pos of maze.ends) {
-    if (pos.point.row == playerPos.y && pos.point.col == playerPos.x) {
-      return true;
-    }
-  }
-  return false;
-}
-
-function setMaze(newMaze) {
-  log.info("setMaze", { old: maze, new: newMaze });
-  maze = newMaze;
-}
-
-function createPlayer(username, state) {
-  log.info("createPlayer", { username, state });
-
-  if (players[username]) {
-    log.error("player already exists", {
-      username,
-      old: players[username],
-      new: state,
-    });
-    return;
-  }
-
-  players[username] = state;
-}
-
-function setPlayerPosition(username, position) {
-  log.debug("setPlayerPosition", { username, position });
-
-  if (!players[username]) {
-    throw new Error(
-      "setPlayerPosition error" +
-        JSON.stringify({
-          reason: "player does not exist",
-          username,
-          position,
-        })
-    );
-  }
-
-  Object.assign(players[username], position);
-}
-
-function reply(type, data) {
+function getReply(type, data) {
   return {
     type,
     data,
   };
 }
 
-exports.initializePlayer = function (username) {
-  log.info("initializePlayer", { username });
-
-  if (!maze) {
-    setMaze(backtrack.gen(w, h));
+class State {
+  constructor() {
+    this.walls = new Walls(backtrack.gen(w, h));
+    this.players = {};
   }
 
-  createPlayer(username, {
-    x: maze.startingPoint.col,
-    y: maze.startingPoint.row,
-    color: randomColor(),
-  });
+  createPlayer(username, state) {
+    log.info("createPlayer", { username, state });
 
-  return mazedraw.draw(w, h, maze, cellSize).then((mazeMap) => {
-    return [
-      reply("send", {
-        code: "initialize",
-        players,
-        map: mazeMap.toString("base64"),
-        w,
-        h,
-      }),
-      reply("broadcast", {
-        code: "join",
-        username: username,
-        player: players[username],
-      }),
-    ];
-  });
-};
+    if (this.players[username]) {
+      log.error("player already exists", {
+        username,
+        old: this.players[username],
+        new: state,
+      });
+      return;
+    }
 
-exports.movePlayer = function (username, delta) {
-  log.debug("movePlayer", { username, delta });
+    this.players[username] = state;
+  }
 
-  const from = players[username];
-  const to = {
-    x: from.x + delta.x,
-    y: from.y + delta.y,
-  };
+  setPlayerPosition(username, position) {
+    log.debug("setPlayerPosition", { username, position });
 
-  log.debug("calculated positions", { username, from, to });
+    assert.ok(this.players[username], username);
 
-  let replies = [];
+    Object.assign(this.players[username], position);
+  }
 
-  if (validMove(from, to)) {
-    setPlayerPosition(username, to);
+  initializePlayer(username) {
+    log.info("initializePlayer", { username });
 
-    replies.push(
-      reply("broadcast", {
-        code: "update",
-        username: username,
-        player: players[username],
-      })
-    );
+    this.createPlayer(username, {
+      ...this.walls.startPosition,
+      color: randomColor(),
+    });
 
-    if (wins(to)) {
-      replies.push(
-        reply("broadcast", {
-          code: "win",
+    return mazedraw.draw(w, h, this.maze, cellSize).then((mazeMap) => {
+      return [
+        getReply("send", {
+          code: "initialize",
+          players: this.players,
+          map: mazeMap.toString("base64"),
+          w,
+          h,
+        }),
+        getReply("broadcast", {
+          code: "join",
           username: username,
+          player: this.players[username],
+        }),
+      ];
+    });
+  }
+
+  movePlayer(username, delta) {
+    log.debug("movePlayer", { username, delta });
+
+    assert.ok(this.players[username], username);
+
+    const from = this.players[username];
+    const to = {
+      x: from.x + delta.x,
+      y: from.y + delta.y,
+    };
+
+    log.debug("calculated positions", { username, from, to });
+
+    let replies = [];
+
+    if (this.walls.validMove(from, to)) {
+      this.setPlayerPosition(username, to);
+
+      replies.push(
+        getReply("broadcast", {
+          code: "update",
+          username: username,
+          player: this.players[username],
         })
       );
+
+      if (this.walls.wins(to)) {
+        replies.push(
+          getReply("broadcast", {
+            code: "win",
+            username: username,
+          })
+        );
+      }
     }
+
+    return Promise.resolve(replies);
   }
 
-  return Promise.resolve(replies);
-};
+  resetMap() {
+    log.info("resetMap");
 
-exports.resetMap = function () {
-  log.info("resetMap");
+    const tempMaze = mazegen.gen(w, h);
 
-  const tempMaze = backtrack.gen(w, h);
+    return mazedraw.draw(w, h, tempMaze, cellSize).then((mazeMap) => {
+      log.info("resetMap callback", { w, h, cellSize });
 
-  return mazedraw.draw(w, h, tempMaze, cellSize).then((mazeMap) => {
-    log.info("resetMap callback", { w, h, cellSize });
+      for (const uname in players) {
+        this.setPlayerPosition(uname, {
+          x: this.maze.startingPoint.col,
+          y: this.maze.startingPoint.row,
+        });
+      }
 
-    for (const uname in players) {
-      setPlayerPosition(uname, {
-        x: maze.startingPoint.col,
-        y: maze.startingPoint.row,
-      });
-    }
+      this.walls = new Walls(tempMaze);
 
-    setMaze(tempMaze);
+      return [
+        getReply("broadcast", {
+          code: "initialize",
+          players: this.players,
+          map: mazeMap.toString("base64"),
+          w,
+          h,
+        }),
+      ];
+    });
+  }
+}
 
-    return [
-      reply("broadcast", {
-        code: "initialize",
-        players,
-        map: mazeMap.toString("base64"),
-        w,
-        h,
-      }),
-    ];
-  });
-};
+exports.State = State;

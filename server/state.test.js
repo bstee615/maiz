@@ -55,25 +55,22 @@ mock("randomColor", function () {
 });
 
 const { getTestLogger } = require("./log");
-const { start } = require("repl");
 mock("./log", {
   getLogger: getTestLogger(),
 });
 
-beforeEach(() => {
-  delete require.cache[require.resolve("./state")];
-});
+const { State } = require("./State");
 
 describe("state", function () {
   describe("initializePlayer", function () {
     it("should succeed normally", function () {
-      const state = require("./state");
+      const state = new State();
 
       return state.initializePlayer("benji");
     });
 
     it("should fail when we try to reinitialize a player", function () {
-      const state = require("./state");
+      const state = new State();
       state.initializePlayer("benji").catch((ex) => assert.fail(ex));
 
       return state
@@ -86,8 +83,8 @@ describe("state", function () {
   describe("movePlayer", function () {
     let state;
     beforeEach(() => {
-      state = require("./state");
-      state.initializePlayer("benji").catch((ex) => assert.fail(ex));
+      state = new State();
+      state.initializePlayer("benji");
     });
 
     const deltas = [
@@ -110,7 +107,7 @@ describe("state", function () {
       },
     ];
     for (const delta of deltas) {
-      it(`should be able to move from (${startingPoint.col}, ${startingPoint.row}) to (${delta.x}, ${delta.y})`, function () {
+      it(`should be able to move (${delta.x}, ${delta.y}) from (${startingPoint.col}, ${startingPoint.row})`, function () {
         return state.movePlayer("benji", delta).then((messages) => {
           const m = messages[0];
           assert.equal(m.data.code, "update");
