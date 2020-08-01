@@ -1,9 +1,10 @@
 const uuid = require("uuid");
 
-const { State } = require("./State");
-
 const { getLogger } = require("./log");
 const log = getLogger(module.filename);
+
+const { State } = require("./State");
+const state = new State();
 
 let clients = {};
 
@@ -59,8 +60,6 @@ class NetContext {
     }
   }
 }
-
-const state = new State();
 
 function doCommand(command, client) {
   const ctx = new NetContext(client);

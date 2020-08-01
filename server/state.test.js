@@ -1,11 +1,11 @@
 const assert = require("assert");
 const mock = require("mock-require");
 
-mock("./mazedraw", {
+const mockMazedraw = {
   draw: function () {
     return Promise.resolve(Buffer.alloc(1024));
   },
-});
+};
 
 const startingPoint = {
   row: 5,
@@ -16,7 +16,7 @@ const end = {
   col: 4,
 };
 
-mock("./backtrack", {
+const mockMazegen = {
   gen: function () {
     let walls = [];
     for (let i = 0; i < 10; i++) {
@@ -48,7 +48,7 @@ mock("./backtrack", {
       ends,
     };
   },
-});
+};
 
 mock("randomColor", function () {
   return "#def271";
@@ -61,16 +61,20 @@ mock("./log", {
 
 const { State } = require("./State");
 
+function stateFactory() {
+  return new State(mockMazegen, mockMazedraw);
+}
+
 describe("state", function () {
   describe("initializePlayer", function () {
     it("should succeed normally", function () {
-      const state = new State();
+      const state = stateFactory();
 
       return state.initializePlayer("benji");
     });
 
     it("should fail when we try to reinitialize a player", function () {
-      const state = new State();
+      const state = stateFactory();
       state.initializePlayer("benji").catch((ex) => assert.fail(ex));
 
       return state
@@ -83,7 +87,7 @@ describe("state", function () {
   describe("movePlayer", function () {
     let state;
     beforeEach(() => {
-      state = new State();
+      state = stateFactory();
       state.initializePlayer("benji");
     });
 

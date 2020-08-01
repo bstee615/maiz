@@ -1,5 +1,3 @@
-const mazedraw = require("./mazedraw");
-const backtrack = require("./backtrack");
 const randomColor = require("randomcolor");
 const assert = require("assert");
 
@@ -19,8 +17,14 @@ function getReply(type, data) {
 }
 
 class State {
-  constructor() {
-    this.walls = new Walls(backtrack.gen(w, h));
+  constructor(mazegenService, mazedrawService) {
+    mazegenService = mazegenService || require("./backtrack");
+    mazedrawService = mazedrawService || require("./mazedraw");
+
+    this.mazegenService = mazegenService;
+    this.mazedrawService = mazedrawService;
+
+    this.walls = new Walls(this.mazegenService.gen(w, h), w, h);
     this.players = {};
   }
 
@@ -55,22 +59,24 @@ class State {
       color: randomColor(),
     });
 
-    return mazedraw.draw(w, h, this.maze, cellSize).then((mazeMap) => {
-      return [
-        getReply("send", {
-          code: "initialize",
-          players: this.players,
-          map: mazeMap.toString("base64"),
-          w,
-          h,
-        }),
-        getReply("broadcast", {
-          code: "join",
-          username: username,
-          player: this.players[username],
-        }),
-      ];
-    });
+    return this.mazedrawService
+      .draw(w, h, this.maze, cellSize)
+      .then((mazeMap) => {
+        return [
+          getReply("send", {
+            code: "initialize",
+            players: this.players,
+            map: mazeMap.toString("base64"),
+            w,
+            h,
+          }),
+          getReply("broadcast", {
+            code: "join",
+            username: username,
+            player: this.players[username],
+          }),
+        ];
+      });
   }
 
   movePlayer(username, delta) {
@@ -115,30 +121,32 @@ class State {
   resetMap() {
     log.info("resetMap");
 
-    const tempMaze = mazegen.gen(w, h);
+    const tempMaze = this.mazegenService.gen(w, h);
 
-    return mazedraw.draw(w, h, tempMaze, cellSize).then((mazeMap) => {
-      log.info("resetMap callback", { w, h, cellSize });
+    return this.mazedrawService
+      .draw(w, h, tempMaze, cellSize)
+      .then((mazeMap) => {
+        log.info("resetMap callback", { w, h, cellSize });
 
-      for (const uname in players) {
-        this.setPlayerPosition(uname, {
-          x: this.maze.startingPoint.col,
-          y: this.maze.startingPoint.row,
-        });
-      }
+        for (const uname in players) {
+          this.setPlayerPosition(uname, {
+            x: this.maze.startingPoint.col,
+            y: this.maze.startingPoint.row,
+          });
+        }
 
-      this.walls = new Walls(tempMaze);
+        this.walls = new Walls(tempMaze, w, h);
 
-      return [
-        getReply("broadcast", {
-          code: "initialize",
-          players: this.players,
-          map: mazeMap.toString("base64"),
-          w,
-          h,
-        }),
-      ];
-    });
+        return [
+          getReply("broadcast", {
+            code: "initialize",
+            players: this.players,
+            map: mazeMap.toString("base64"),
+            w,
+            h,
+          }),
+        ];
+      });
   }
 }
 

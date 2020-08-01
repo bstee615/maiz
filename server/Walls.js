@@ -1,14 +1,12 @@
-const w = 10,
-  h = 10,
-  cellSize = 10;
-
-function inBounds(pos) {
-  return pos.x >= 0 && pos.x < w && pos.y >= 0 && pos.y < h;
-}
-
 class Walls {
-  constructor(maze) {
+  constructor(maze, w, h) {
     this.maze = maze;
+    this.w = w;
+    this.h = h;
+  }
+
+  inBounds(pos) {
+    return pos.x >= 0 && pos.x < this.w && pos.y >= 0 && pos.y < this.h;
   }
 
   wallBlocks(oldPos, newPos) {
@@ -20,7 +18,7 @@ class Walls {
   }
 
   validMove(oldPos, newPos) {
-    if (!inBounds(newPos)) {
+    if (!this.inBounds(newPos)) {
       return false;
     }
 
