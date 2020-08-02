@@ -4,7 +4,7 @@ if (process.env.NODE_ENV === "production") {
 
   exports.mazedraw = {
     host: "mazedraw",
-    port: 3000,
+    port: 80,
   };
 } else {
   exports.host = "127.0.0.1";

@@ -2,6 +2,7 @@
 from PIL import Image, ImageDraw
 import io
 import math
+import base64
 
 
 def draw_maze(message, show=True):
@@ -50,5 +51,4 @@ def draw_maze(message, show=True):
 
     img_bytes = io.BytesIO()
     img.save(img_bytes, format='PNG')
-
-    return img_bytes
+    return f'data:image/png;base64,{base64.b64encode(img_bytes.getvalue()).decode()}'

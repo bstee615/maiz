@@ -55,18 +55,21 @@ class State {
     log.info("initializePlayer", { username });
 
     this.createPlayer(username, {
-      ...this.walls.startPosition,
+      x: this.walls.maze.startingPoint.col,
+      y: this.walls.maze.startingPoint.row,
       color: randomColor(),
     });
 
     return this.mazedrawService
-      .draw(w, h, this.maze, cellSize)
+      .draw(w, h, this.walls.maze, cellSize)
       .then((mazeMap) => {
+        log.debug("initializePlayer callback", { mazeMap });
+
         return [
           getReply("send", {
             code: "initialize",
             players: this.players,
-            map: mazeMap.toString("base64"),
+            map: mazeMap,
             w,
             h,
           }),
@@ -126,12 +129,12 @@ class State {
     return this.mazedrawService
       .draw(w, h, tempMaze, cellSize)
       .then((mazeMap) => {
-        log.info("resetMap callback", { w, h, cellSize });
+        log.debug("resetMap callback", { mazeMap });
 
         for (const uname in players) {
           this.setPlayerPosition(uname, {
-            x: this.maze.startingPoint.col,
-            y: this.maze.startingPoint.row,
+            x: this.walls.maze.startingPoint.col,
+            y: this.walls.maze.startingPoint.row,
           });
         }
 
@@ -141,7 +144,7 @@ class State {
           getReply("broadcast", {
             code: "initialize",
             players: this.players,
-            map: mazeMap.toString("base64"),
+            map: mazeMap,
             w,
             h,
           }),

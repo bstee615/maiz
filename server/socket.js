@@ -28,7 +28,7 @@ class NetContext {
   constructor(client) {
     this.client = client;
 
-    this.log = logging.getLogger(this.constructor.name);
+    this.log = getLogger(this.constructor.name);
     this.log.debug("constructor", { username: this.username });
   }
 
@@ -41,7 +41,7 @@ class NetContext {
   }
 
   send(msg) {
-    this.log.debug("send", { msg, username: this.username });
+    this.log.debug("send", { msg, username: this.client.username });
 
     this.client.send(msg);
   }

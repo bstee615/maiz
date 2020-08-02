@@ -69,8 +69,11 @@ exports.setMap = function (imageBase64) {
       mapImage = img;
       resolve();
     };
-    img.onerror = reject;
-    img.src = "data:image/png;base64," + imageBase64;
+    img.onerror = function (ex) {
+      console.error(ex);
+      reject(ex);
+    };
+    img.src = imageBase64;
   });
 };
 
