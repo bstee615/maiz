@@ -50,9 +50,7 @@ const mockMazegen = {
   },
 };
 
-mock("randomColor", function () {
-  return "#def271";
-});
+const notRandomColor = "#def271";
 
 const { getTestLogger } = require("./log");
 mock("./log", {
@@ -62,7 +60,12 @@ mock("./log", {
 const { State } = require("./State");
 
 function stateFactory() {
-  return new State(mockMazegen, mockMazedraw);
+  const mockServices = {
+    mazegen: mockMazegen,
+    mazedraw: mockMazedraw,
+    randomColor: () => notRandomColor,
+  };
+  return new State(mockServices);
 }
 
 describe("state", function () {
@@ -70,7 +73,16 @@ describe("state", function () {
     it("should succeed normally", function () {
       const state = stateFactory();
 
-      return state.initializePlayer("benji");
+      return state
+        .initializePlayer("benji")
+        .then((messages) => messages[0])
+        .then((msg) => {
+          assert.deepEqual(msg.data.players["benji"], {
+            x: startingPoint.col,
+            y: startingPoint.row,
+            color: notRandomColor,
+          });
+        });
     });
 
     it("should fail when we try to reinitialize a player", function () {
@@ -112,12 +124,17 @@ describe("state", function () {
     ];
     for (const delta of deltas) {
       it(`should be able to move (${delta.x}, ${delta.y}) from (${startingPoint.col}, ${startingPoint.row})`, function () {
-        return state.movePlayer("benji", delta).then((messages) => {
-          const m = messages[0];
-          assert.equal(m.data.code, "update");
-          assert.equal(startingPoint.col + delta.x, m.data.player.x);
-          assert.equal(startingPoint.row + delta.y, m.data.player.y);
-        });
+        return state
+          .movePlayer("benji", delta)
+          .then((messages) => messages[0])
+          .then((msg) => {
+            assert.equal(msg.data.code, "update");
+            assert.deepEqual(msg.data.player, {
+              x: startingPoint.col + delta.x,
+              y: startingPoint.row + delta.y,
+              color: notRandomColor,
+            });
+          });
       });
     }
 
@@ -146,9 +163,14 @@ describe("state", function () {
         y: 1,
       };
 
-      return state
-        .movePlayer("benji", delta)
-        .then((messages) => assert.equal(messages.length, 0));
+      return state.movePlayer("benji", delta).then((messages) => {
+        assert.equal(messages.length, 0);
+        assert.deepEqual(state.players["benji"], {
+          x: startingPoint.col,
+          y: startingPoint.row,
+          color: notRandomColor,
+        });
+      });
     });
   });
 });

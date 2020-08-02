@@ -1,4 +1,3 @@
-const randomColor = require("randomcolor");
 const assert = require("assert");
 
 const { getLogger } = require("./log");
@@ -17,14 +16,12 @@ function getReply(type, data) {
 }
 
 class State {
-  constructor(mazegenService, mazedrawService) {
-    mazegenService = mazegenService || require("./backtrack");
-    mazedrawService = mazedrawService || require("./mazedraw");
+  constructor(services) {
+    this.mazegen = services.mazegen || require("./backtrack");
+    this.mazedraw = services.mazedraw || require("./mazedraw");
+    this.randomColor = services.randomColor || require("randomcolor");
 
-    this.mazegenService = mazegenService;
-    this.mazedrawService = mazedrawService;
-
-    this.walls = new Walls(this.mazegenService.gen(w, h), w, h);
+    this.walls = new Walls(this.mazegen.gen(w, h), w, h);
     this.players = {};
   }
 
@@ -57,10 +54,10 @@ class State {
     this.createPlayer(username, {
       x: this.walls.maze.startingPoint.col,
       y: this.walls.maze.startingPoint.row,
-      color: randomColor(),
+      color: this.randomColor(),
     });
 
-    return this.mazedrawService
+    return this.mazedraw
       .draw(w, h, this.walls.maze, cellSize)
       .then((mazeMap) => {
         log.debug("initializePlayer callback", { mazeMap });
@@ -124,32 +121,30 @@ class State {
   resetMap() {
     log.info("resetMap");
 
-    const tempMaze = this.mazegenService.gen(w, h);
+    const tempMaze = this.mazegen.gen(w, h);
 
-    return this.mazedrawService
-      .draw(w, h, tempMaze, cellSize)
-      .then((mazeMap) => {
-        log.debug("resetMap callback", { mazeMap });
+    return this.mazedraw.draw(w, h, tempMaze, cellSize).then((mazeMap) => {
+      log.debug("resetMap callback", { mazeMap });
 
-        for (const uname in players) {
-          this.setPlayerPosition(uname, {
-            x: this.walls.maze.startingPoint.col,
-            y: this.walls.maze.startingPoint.row,
-          });
-        }
+      for (const uname in players) {
+        this.setPlayerPosition(uname, {
+          x: this.walls.maze.startingPoint.col,
+          y: this.walls.maze.startingPoint.row,
+        });
+      }
 
-        this.walls = new Walls(tempMaze, w, h);
+      this.walls = new Walls(tempMaze, w, h);
 
-        return [
-          getReply("broadcast", {
-            code: "initialize",
-            players: this.players,
-            map: mazeMap,
-            w,
-            h,
-          }),
-        ];
-      });
+      return [
+        getReply("broadcast", {
+          code: "initialize",
+          players: this.players,
+          map: mazeMap,
+          w,
+          h,
+        }),
+      ];
+    });
   }
 }
 
