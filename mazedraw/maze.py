@@ -3,6 +3,7 @@ from PIL import Image, ImageDraw
 import io
 import math
 import base64
+import logging
 
 
 def draw_maze(message, show=True):
@@ -17,15 +18,17 @@ def draw_maze(message, show=True):
     draw = ImageDraw.Draw(img)
 
     # Draw an X at the start
-    # print(start)
     draw.rectangle([((start["col"])*size, (start["row"])*size),
                     ((start["col"]+1)*size, (start["row"]+1)*size)], fill="green", width=3)
+    logging.info("start %s", start)
 
-    for obj in ends:
-        point = obj["point"]
+    for end in ends:
+        point = end["point"]
         draw.rectangle([((point["col"])*size, (point["row"])*size),
                         ((point["col"]+1)*size, (point["row"]+1)*size)], fill="blue", width=3)
+        logging.info("end %s", end)
 
+    logging.info("drawing %d walls", len(walls))
     for rowi, row in enumerate(walls):
         for coli, col in enumerate(row):
             for conn in col:
@@ -45,10 +48,13 @@ def draw_maze(message, show=True):
 
                 else:
                     print("Bang Ding Ow")
-        print(f"{math.ceil(((rowi+1)/len(walls))*100)}% done")
+        logging.info("%d%% done", math.ceil(((rowi+1)/len(walls))*100))
     if show:
         img.show()
 
     img_bytes = io.BytesIO()
     img.save(img_bytes, format='PNG')
+
+    logging.debug("generated image: %s", img_bytes)
+
     return f'data:image/png;base64,{base64.b64encode(img_bytes.getvalue()).decode()}'
