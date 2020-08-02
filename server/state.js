@@ -16,7 +16,7 @@ function getReply(type, data) {
 }
 
 class State {
-  constructor(services) {
+  constructor(services = {}) {
     this.mazegen = services.mazegen || require("./backtrack");
     this.mazedraw = services.mazedraw || require("./mazedraw");
     this.randomColor = services.randomColor || require("randomcolor");
